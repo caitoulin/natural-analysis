@@ -1,0 +1,17 @@
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "helpers": true,
+        "corejs": false,
+        "regenerator": true,
+        "useESModules": true,
+        "absoluteRuntime": false,
+        "version": "7.0.0-beta.0"
+      }
+    ],
+    ["@babel/plugin-proposal-class-properties", { "loose": true }]
+  ]
+}
