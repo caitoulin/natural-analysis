@@ -2,6 +2,7 @@ const webpack = require("webpack");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const loader = require("awesome-typescript-loader");
 
 let htmlWebpackPlugin = new HtmlWebpackPlugin({
   filename: "index.html",
@@ -15,7 +16,7 @@ module.exports = {
   devtool: "eval-source-map",
   entry: [
     "webpack-hot-middleware/client",
-    path.resolve(__dirname, "../views/src/index.js"),
+    path.resolve(__dirname, "../views/src/index.tsx"),
   ],
   output: {
     path: path.join(__dirname, "..", "/dist"),
@@ -23,7 +24,7 @@ module.exports = {
     publicPath: "/",
   },
   resolve: {
-    extensions: [".js", ".json", ".webpack.js", ".tsx", ".jsx"],
+    extensions: [".js", ".json", ".tsx", ".jsx"],
   },
   module: {
     rules: [
@@ -35,6 +36,10 @@ module.exports = {
         test: /\.(jsx|js)$/,
         exclude: /node-modules/,
         loader: "babel-loader",
+      },
+      {
+        test: /\.(tsx|ts)$/,
+        loader: "awesome-typescript-loader",
       },
       {
         test: /\.(img|jpg|gif|svg)$/,

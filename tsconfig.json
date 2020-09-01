@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "ESNext",
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "typeRoots": ["node_modules/@types", "@types"],
+    "lib": ["DOM", "ES2015", "ScriptHost", "ES2019.Array"]
+  },
+  "include": ["./views/**/*"],
+  "exclude": [
+    //排除文件
+    "node_modules",
+    "build",
+    "dist"
+  ]
+}
