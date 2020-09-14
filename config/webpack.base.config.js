@@ -38,7 +38,7 @@ module.exports = {
             },
             {
                 test: /\.(tsx|ts)$/,
-                loader: 'awesome-typescript-loader',
+                loader: 'ts-loader',
             },
             {
                 test: /\.(img|jpg|gif|svg)$/,
