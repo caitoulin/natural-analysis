@@ -5,9 +5,10 @@
         "incremental": true, // TS编译器在第一次编译之后会生成一个存储编译信息的文件，
         //第二次编译会在第一次的基础上进行增量编译，可以提高编译的速度
         "noImplicitAny": true,
-        "module": "commonjs",
+        "module": "ES6",
+        "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "target": "es5",
+        "target": "ES6",
         "moduleResolution": "node",
         "jsx": "react",
         "typeRoots": ["node_modules/@types", "@types"],

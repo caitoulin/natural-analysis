@@ -1,4 +1,4 @@
-const typhoonList = require('.././model/mock/typhoon');
+const landedTyphoonList = require('../model/mock/landTyphoon');
 
 const getTyListData = (req, res) => {
     const { typhoonData } = typhoonList;

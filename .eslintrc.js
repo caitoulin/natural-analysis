@@ -17,7 +17,7 @@ module.exports = {
         sourceType: 'module', // ES代码
         jsx: 'true',
     },
-    plugins: ['react', '@typescript-eslint', 'prettier'], // extends找不到就会到plugins中查找
+    plugins: ['react', '@typescript-eslint', 'prettier', 'html'], // extends找不到就会到plugins中查找
     rules: {
         '@typescript-eslint/ban-types': 'error',
         '@typescript-eslint/explicit-function-return-type': 'off',

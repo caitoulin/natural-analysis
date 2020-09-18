@@ -2,14 +2,14 @@ const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-
+console.log('dir', path.resolve(__dirname, '../dist/style.css'));
 let htmlWebpackPlugin = new HtmlWebpackPlugin({
     filename: 'index.html',
     template: path.resolve(__dirname, '../views/index.html'),
 });
 
 let miniCssExtractPlugin = new MiniCssExtractPlugin({
-    filename: path.resolve(__dirname, '../dist/style.css'),
+    filename: 'style.css',
 });
 module.exports = {
     devtool: 'eval-source-map',
