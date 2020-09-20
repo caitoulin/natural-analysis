@@ -21,7 +21,8 @@
 
 .icon-caidan:before {
   content: "\e60d";
-  font-size: 30px;
-  color:rgba(87, 159, 201,0.6)
+  font-size: 27px;
+  color:rgba(87, 159, 201,0.6);
+  cursor: pointer;
 }
 

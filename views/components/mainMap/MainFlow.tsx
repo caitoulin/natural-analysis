@@ -17,7 +17,8 @@ export default class MainFlow extends React.Component<any, any> {
         window.LDmap = new Map({
             controls: [],
             view: new View({
-                center: [0, 0],
+                projection: 'ESPG:4326',
+                center: [123.71318, 24.943509],
                 zoom: 1,
             }),
             layers: [

@@ -31,7 +31,7 @@ export default class BasisBar extends React.Component<any, Istate> {
                     className={classNames('show-bar', {
                         'no-show-bar': !isShow,
                     })}>
-                    <span className="tag-show">基本信息</span>
+                    <span>基本信息</span>
                 </div>
             </div>
         );
