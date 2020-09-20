@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './menu.less';
+import '../../src/assets/fonts/iconfont.css';
 import classNames from 'classnames';
 
 export default class Menu extends Component<any, any> {
@@ -56,9 +57,22 @@ export default class Menu extends Component<any, any> {
                                                 }
                                             )}>
                                             {values.map(
-                                                (value: any, index: any) => (
-                                                    <li key={index}>
-                                                        <span>{value}</span>
+                                                (
+                                                    value: string,
+                                                    valueIndex: number
+                                                ) => (
+                                                    <li key={valueIndex}>
+                                                        <span
+                                                            onClick={() => {
+                                                                this.handleAnalysis(
+                                                                    indexStr +
+                                                                        indexItem.toString() +
+                                                                        index.toString() +
+                                                                        valueIndex.toString()
+                                                                );
+                                                            }}>
+                                                            {value}
+                                                        </span>
                                                     </li>
                                                 )
                                             )}
@@ -71,6 +85,9 @@ export default class Menu extends Component<any, any> {
                 </ul>
             );
         });
+    };
+    handleAnalysis = (index: string): void => {
+        console.log(index);
     };
     selectedFirst = (index: string): void => {
         const { isSelectedFirst } = this.state;
@@ -121,6 +138,7 @@ export default class Menu extends Component<any, any> {
                     {Object.entries(menu).map(([keys, lists], index) => {
                         return (
                             <li key={index}>
+                                <i className="iconfont icon-star"></i>
                                 <span
                                     onClick={() => {
                                         this.selectedFirst(

@@ -5,6 +5,7 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import './main.less';
 import Menu from '../menuBar/Menu';
+import BasisBar from '../basisBar/basisBar';
 declare global {
     interface Window {
         LDmap: any;
@@ -31,6 +32,7 @@ export default class MainFlow extends React.Component<any, any> {
         return (
             <div className="container">
                 <Menu />
+                <BasisBar />
                 <div id="map"></div>
             </div>
         );

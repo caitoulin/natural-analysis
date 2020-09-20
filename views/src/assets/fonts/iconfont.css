@@ -1,0 +1,27 @@
+@font-face {font-family: "iconfont";
+  src: url('iconfont.eot?t=1600484637618'); /* IE9 */
+  src: url('iconfont.eot?t=1600484637618#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('data:application/x-font-woff2;charset=utf-8;base64,d09GMgABAAAAAAPcAAsAAAAACAAAAAOOAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEIGVgCDBgqDXIMVATYCJAMMCwgABCAFhG0HRBvpBlGU7UmC7MeB4zpwKtGmwRBibjpJRZ7U1f/HePja73fuvv1mWFNLDN2nkxiSaCIVkpdMqKRANwmJv/9rmhILm+fLsopQdWAP8w84l5Fjp1dlJuQm3Ib08vr3RAFM0satTr6aIOe30tzMCd6ag2Op31wgeUDvkh34gM8P9EBRtdGABrqBTND3GE5h/UQXHZcJ1I3pK+xsz7dQl9GsQFx6jgH1mEYuIYSqvJyzMU+JFQGSaroi7AGu3d+PT7AaVJJSgRbuXmxsmL+wngohhmO8bQTg9meCuo0CK0AmDnIt+0p+ZEVJ/SMpl6eXZSH15cdxXM5XVOb/8EiCKKPcJlhAcdoprskJpYXA22vuycnKGHsATM7/FeJtg9lYj8ukA8JzNNGKHHG3tgnZiho5YWWNZNTZ0Nir5R/WKSWs7c3tlkHK2yWQ9u76OnG3siq2tLpKvMsnVwNpl6qURWsapaq7NNGOmW9Jm7Rb1ZS6W1sFVXk9qCTKe3g2lXlw4EY4PERYx8dCeHSUxM6pEFVKccrLsTJPdgWQGJxcXM6AqhdFgU6fZ6xcrPUt0tZvA+s1lJekk/xzs/DW0SPfJTmRgz0yUPat+VCGDpg6iJblXI9GW/HcLDSRpryoWRcoDvMlKX2eqfs5+spL/O2LRsc1+CzJqZpHoYOtNy3IIGbOX5bzKah+8N6pqvKSSsp+ar+nl3+Gp68B+XBmBuYHCKajyocx/OwMgYlMfAB8mZy2X6Vfr75N/9L/dMLp9VXqre3bwqUiEkEuC67+l/wDOkD/qjQNNQH0sWwEsWf4Nx5P1E2tZ/VDZWTwnFuh4PLqZQNVidrcJ9aQAwDIaxqftEV+S5RWBQpHOg4l1LmfPiDHgL/2iuGrEgtVwyEkFaNQqJpBZuyKv6RhHrGyqnWAumW77Q2DWEnkGpZ8MQhd35C0PUGh6weZsb9QMuIfyroBoW4vBAc2zEVw05rJELLRfEHPSmIl9NL08i/kPIQGR/ku+Z449/w4GY6T8R3FxH0syR+dqYhCxUmEW3YdhWGCKSc+WTJ0RdLZaKTyvmhoJRE0bWPEIIgNmV4gjyURU3Z30Uz9/AVxPAgZuKTth/EeYTmvfzQxNK6B3EniWm3n8pncI8eUEApSWCKCtsxEQh5JoDR/nI9YxJDbIpSaGWEnVVcyHF8WXd8eqKOFRaQoIuudGp5txKFIMrzUi1NbWk2pAQAAAA==') format('woff2'),
+  url('iconfont.woff?t=1600484637618') format('woff'),
+  url('iconfont.ttf?t=1600484637618') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+  url('iconfont.svg?t=1600484637618#iconfont') format('svg'); /* iOS 4.1- */
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-star:before {
+  content: "\e68f";
+}
+
+.icon-caidan:before {
+  content: "\e60d";
+  font-size: 30px;
+  color:rgba(87, 159, 201,0.6)
+}
+
