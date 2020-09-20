@@ -21,3 +21,5 @@ function getAnalysisResult(id: string): void {
             break;
     }
 }
+
+

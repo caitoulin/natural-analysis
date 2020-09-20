@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": "./",
         "outDir": "./dist/",
         "sourceMap": true,
         "incremental": true, // TS编译器在第一次编译之后会生成一个存储编译信息的文件，
