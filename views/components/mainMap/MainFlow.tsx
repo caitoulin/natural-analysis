@@ -53,6 +53,7 @@ export default class MainFlow extends React.Component<any, any> {
         const cellSide = 150;
         const options: Option = { units: 'miles' };
         const squareGrid = turf.squareGrid(bbox, cellSide, options);
+        console.log(squareGrid);
         const format = new GeoJSON();
         const source = new VectorSource();
         const allFeatures = format
@@ -61,6 +62,7 @@ export default class MainFlow extends React.Component<any, any> {
                 feature.setId(index);
                 return feature;
             });
+        console.log(allFeatures);
         source.addFeatures(allFeatures);
         const getLayer = new VectorLayer({ source: source });
         window.LDmap.addLayer(getLayer);
