@@ -12,7 +12,7 @@ const getTyListData = (req, res) => {
 
 const getTyOrigin = (req, res) => {
     res.header('Access-control-max-age', 5000);
-    res.send(typhoonSolve.clustrOrigin(landedTyphoonList));
+    res.send(typhoonSolve.landedOrigin(landedTyphoonList));
 };
 
 exports.getTyListData = getTyListData;

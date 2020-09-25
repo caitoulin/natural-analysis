@@ -14,13 +14,26 @@ const options = {
 };
 
 app.use(express.static(path.join(__dirname, 'public'), options));
-
-app.all('*', (req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,POST');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,request-origin');
+app.all('*', function (req, res, next) {
+    console.log(req.headers.origin);
+    console.log(req.environ);
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000' || '*');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Content-Length, Accept, X-Requested-With , yourHeaderFeild'
+    );
+    res.header(
+        'Access-Control-Allow-Methods',
+        'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+    );
+    res.header('Access-Control-Allow-Credentials', false);
+    res.header('X-Powered-By', ' 3.2.1');
     res.header('Content-Type', 'application/json;charset=utf-8');
-    next();
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
 });
 app.use('/get', mainRouter);
 // catch 404 and forward to error handler

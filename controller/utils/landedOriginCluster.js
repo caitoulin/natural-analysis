@@ -1,8 +1,8 @@
-function clustrLandedOrigin(landTyphoonList) {
+function landedOrigin(landTyphoonList) {
     const landOrigin = Object.entries(landTyphoonList).map(([key, item]) => {
-        return item.position;
+        return { [key]: item.position };
     });
     return landOrigin;
 }
 
-exports.clustrLandedOrigin = clustrLandedOrigin;
+exports.landedOrigin = landedOrigin;

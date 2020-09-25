@@ -3,7 +3,11 @@ import './menu.less';
 import '../../src/assets/fonts/iconfont.css';
 import classNames from 'classnames';
 
-export default class Menu extends Component<any, any> {
+interface IProps {
+    handleControlPanel: (index: string) => void;
+}
+
+export default class Menu extends Component<IProps, any> {
     state: any = {
         menu: {
             firstChapter: [
@@ -87,6 +91,7 @@ export default class Menu extends Component<any, any> {
         });
     };
     handleAnalysis = (index: string): void => {
+        this.props.handleControlPanel(index);
         console.log(index);
     };
     selectedFirst = (index: string): void => {
