@@ -23,7 +23,8 @@ const vectorLayer = new VectorLayer({
             fill: new Fill({
                 color: 'rgba(78,110,242)',
             }),
-            radius: 5,
+            radius: 2
+            ,
         }),
         stroke: new Stroke({
             color: '#0F0',
@@ -58,7 +59,9 @@ export default class BasisBar extends React.Component<IProps, Istate> {
                 geometry: new Point(item[getKey]),
             });
         });
+        console.log(originFeatures.length);
         vectorSource.addFeatures(originFeatures);
+        window.LDmap.addLayer(vectorLayer);
     };
     render() {
         const { isShow } = this.state;
