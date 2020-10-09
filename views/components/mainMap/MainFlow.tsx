@@ -10,9 +10,14 @@ import './main.less';
 import Menu from '../menuBar/Menu';
 import DetailPanel from '../detailPanel/DetailPanel';
 import BasisBar from '../basisBar/basisBar';
-import { getTyphoonOrigin } from '../../src/util/netRequets';
+import { getTyphoonOrigin, getTyphoonLists } from '../../src/util/netRequets';
 import { TyphoonOrigin } from '../../src/util/clusterOrigin';
 import * as turf from '@turf/turf';
+import {
+    storeTyphoonData,
+    getTyphoonData,
+    isExistTyphoonList,
+} from '../../src/util/handleIndexDB';
 import {
     BBox,
     Units,
@@ -98,7 +103,18 @@ export default class MainFlow extends React.Component<any, IState> {
                 this.setState({ origin: typhoonOrigin });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
+        }
+        try {
+            const getMessage = await isExistTyphoonList();
+            if (getMessage === 1) {
+                const typhoonList = await getTyphoonData();
+            } else {
+                const typhoonList: any = await getTyphoonLists();
+                storeTyphoonData(typhoonList['data']);
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
     handleConrolPanel = (getIndex: string): void => {

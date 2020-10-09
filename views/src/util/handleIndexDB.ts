@@ -1,9 +1,3 @@
-import { version } from 'react';
-
-interface PropretyDb {
-    name: string;
-    version?: number;
-}
 interface Coordinate {
     Lat: number;
     Lng: number;
@@ -25,47 +19,35 @@ interface EachTyphoon {
     isornotty: number;
     listInfo: Array<EachPoint>;
 }
-const createDb: PropretyDb = {
-    name: 'typhoonLists',
-    version: 1,
-};
 export function storeTyphoonData(typhoonLists: Array<EachTyphoon>): void {
-    const request = window.indexedDB.open(createDb[name], 1);
-    request.onupgradeneeded = function (event) {
-        const db = (event.target as any).result;
-        const storeNames = db.objectStoreNames;
-        if (!storeNames.contains('typhoon')) {
-            db.createObjectStore('typhoon', {
-                keyPath: 'tfbh',
-                autoIncrement: true,
-            });
-        }
-    };
+    const request = window.indexedDB.open('typhoonLists', 3);
     request.onsuccess = function (event) {
         const db = (event.target as any).result;
-        const trans = db.transaction(['typhoon', 'readwrite']);
+        const trans = db.transaction('typhoon', 'readwrite');
         const store = trans.objectStore('typhoon');
         typhoonLists.forEach((item) => {
             store.add(item);
         });
         db.close();
     };
-    request.onerror = function (event) {
+    request.onerror = function () {
         console.error('打开数据库失败');
     };
 }
 
 export async function getTyphoonData(): Promise<Array<EachTyphoon>> {
     return new Promise((resolve, reject) => {
-        const request = window.indexedDB.open(createDb[name], 1);
+        const request = window.indexedDB.open('typhoonLists', 3);
         request.onsuccess = (event) => {
             const db = (event.target as any).result;
-            const trans = db.transaction(['typhoon', 'readonly']);
-            const store = trans.objectStore('typhoon');
-            resolve(store.getAll());
+            const trans = db.transaction('typhoon', 'readonly');
+            const storeData = trans.objectStore('typhoon').getAll();
+            storeData.onsuccess = function () {
+                resolve(storeData.result);
+            };
             db.close();
         };
-        request.onerror = (event) => {
+        request.onerror = () => {
             reject({ type: 'error' });
         };
     });
@@ -73,18 +55,28 @@ export async function getTyphoonData(): Promise<Array<EachTyphoon>> {
 
 export async function isExistTyphoonList(): Promise<number> {
     return new Promise((resolve, reject) => {
-        const request = window.indexedDB.open(createDb[name], 1);
-        request.onsuccess = (event) => {
+        const request = window.indexedDB.open('typhoonLists', 3);
+        let isCreate = false;
+        request.onupgradeneeded = function (event) {
             const db = (event.target as any).result;
             const storeNames = db.objectStoreNames;
             if (!storeNames.contains('typhoon')) {
+                isCreate = true;
+                db.createObjectStore('typhoon', {
+                    keyPath: 'tfbh',
+                    autoIncrement: true,
+                });
                 resolve(0);
-            } else {
+            }
+        };
+        request.onsuccess = (event) => {
+            const db = (event.target as any).result;
+            const storeNames = db.objectStoreNames;
+            if (storeNames.contains('typhoon') && !isCreate) {
                 resolve(1);
             }
-            db.close();
         };
-        request.onerror = (event) => {
+        request.onerror = () => {
             reject({ type: 'error' });
         };
     });

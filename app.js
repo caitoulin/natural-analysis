@@ -15,8 +15,6 @@ const options = {
 
 app.use(express.static(path.join(__dirname, 'public'), options));
 app.all('*', function (req, res, next) {
-    console.log(req.headers.origin);
-    console.log(req.environ);
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000' || '*');
     res.header(
         'Access-Control-Allow-Headers',
