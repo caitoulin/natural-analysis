@@ -10,14 +10,20 @@ import './main.less';
 import Menu from '../menuBar/Menu';
 import DetailPanel from '../detailPanel/DetailPanel';
 import BasisBar from '../basisBar/basisBar';
-import { getTyphoonOrigin, getTyphoonLists } from '../../src/util/netRequets';
-import { TyphoonOrigin } from '../../src/util/clusterOrigin';
+import {
+    getTyphoonLandedOrigin,
+    getTyphoonLists,
+} from '../../src/util/netRequets';
 import * as turf from '@turf/turf';
 import {
     storeTyphoonData,
     getTyphoonData,
     isExistTyphoonList,
 } from '../../src/util/handleIndexDB';
+import {
+    addLandeOrigin,
+    addTyphonList,
+} from '../../src/middleware/action/actions';
 import {
     BBox,
     Units,
@@ -26,12 +32,12 @@ import {
     MultiPolygon,
     Properties,
 } from '@turf/turf';
+import { connect } from 'react-redux';
 declare global {
     interface Window {
         LDmap: any;
     }
 }
-
 interface Option {
     units?: Units;
     properties?: Properties;
@@ -39,15 +45,13 @@ interface Option {
 }
 interface IState {
     index: string;
-    origin: Array<TyphoonOrigin>;
 }
 
-export default class MainFlow extends React.Component<any, IState> {
+class MainFlow extends React.Component<any, IState> {
     constructor(props: any) {
         super(props);
         this.state = {
             index: '',
-            origin: [],
         };
     }
     componentDidMount() {
@@ -65,14 +69,13 @@ export default class MainFlow extends React.Component<any, IState> {
             ],
             target: 'map',
         });
-        this.handleTyphoonOrigin();
+        this.handleTyphoonLandedOrigin();
     }
     defaultGrids = (): void => {
         const bbox: BBox = [98, 17.5, 124, 46];
         const cellSide = 150;
         const options: Option = { units: 'miles' };
         const squareGrid = turf.squareGrid(bbox, cellSide, options);
-        console.log(squareGrid);
         const format = new GeoJSON();
         const source = new VectorSource();
         const allFeatures = format
@@ -81,26 +84,26 @@ export default class MainFlow extends React.Component<any, IState> {
                 feature.setId(index);
                 return feature;
             });
-        console.log(allFeatures);
         source.addFeatures(allFeatures);
         const getLayer = new VectorLayer({ source: source });
         window.LDmap.addLayer(getLayer);
     };
 
-    handleTyphoonOrigin = async () => {
+    handleTyphoonLandedOrigin = async () => {
+        const { dispatch } = this.props;
         try {
-            if (!localStorage.getItem('origin')) {
-                const typhoonOrigin: any = await getTyphoonOrigin();
+            if (!localStorage.getItem('landedOrigin')) {
+                const typhoonLandedOrigin: any = await getTyphoonLandedOrigin();
                 localStorage.setItem(
-                    'origin',
-                    JSON.stringify(typhoonOrigin['data'])
+                    'landedOrigin',
+                    JSON.stringify(typhoonLandedOrigin['data'])
                 );
-                this.setState({ origin: typhoonOrigin['data'] });
+                dispatch(addLandeOrigin(typhoonLandedOrigin['data']));
             } else {
-                const typhoonOrigin = JSON.parse(
-                    localStorage.getItem('origin')
+                const typhoonLandedOrigin = JSON.parse(
+                    localStorage.getItem('landedOrigin')
                 );
-                this.setState({ origin: typhoonOrigin });
+                dispatch(addLandeOrigin(typhoonLandedOrigin['data']));
             }
         } catch (err) {
             console.error(err);
@@ -109,9 +112,11 @@ export default class MainFlow extends React.Component<any, IState> {
             const getMessage = await isExistTyphoonList();
             if (getMessage === 1) {
                 const typhoonList = await getTyphoonData();
+                dispatch(addTyphonList(typhoonList));
             } else {
                 const typhoonList: any = await getTyphoonLists();
                 storeTyphoonData(typhoonList['data']);
+                dispatch(addTyphonList(typhoonList['data']));
             }
         } catch (err) {
             console.error(err);
@@ -121,14 +126,16 @@ export default class MainFlow extends React.Component<any, IState> {
         this.setState({ index: getIndex });
     };
     render() {
-        const { index, origin } = this.state;
+        const { index } = this.state;
         return (
             <div className="container">
                 <Menu handleControlPanel={this.handleConrolPanel} />
-                <BasisBar origin={origin} />
-                <DetailPanel index={index} origin={origin} />
+                <BasisBar />
+                <DetailPanel index={index} />
                 <div id="map"></div>
             </div>
         );
     }
 }
+
+export default connect()(MainFlow);

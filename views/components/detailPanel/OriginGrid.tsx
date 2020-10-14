@@ -1,7 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import { Fill, Circle, Style, Stroke } from 'ol/style';
+import { EachTyphoon } from '../../src/util/handleIndexDB';
+import { TyphoonOrigin, ssDbscan } from '../../src/util/clusterOrigin';
 import { Point } from 'ol/geom';
 import { Feature } from 'ol';
 
@@ -19,7 +22,7 @@ const colors = [
 ];
 
 const vectorGridSource = new VectorSource();
-const VectorGridLayer = new VectorLayer({
+const vectorGridLayer = new VectorLayer({
     source: vectorGridSource,
     style: new Style({
         image: new Circle({
@@ -36,8 +39,33 @@ const VectorGridLayer = new VectorLayer({
     }),
 });
 
-export default function OriginGrid() {
-    const handleGetGrid = (): void => {};
+function OriginGrid({ tyLists }: { tyLists: Array<EachTyphoon> }) {
+    const handleGetGrid = (): void => {
+        if (vectorGridSource.getFeatures().length !== 0) {
+            if (vectorGridLayer.getVisible()) {
+                vectorGridLayer.setVisible(false);
+            } else {
+                vectorGridLayer.setVisible(true);
+            }
+        } else {
+            const getOriginInfo: Array<TyphoonOrigin> = tyLists.map((item) => {
+                const { tfbh, tfdl, maxfspeed: maxSpeed, listInfo } = item;
+                const position = [
+                    listInfo[0]['positon']['Lng'],
+                    listInfo[0]['positon']['Lat'],
+                ];
+                return { tfdl, tfbh, maxSpeed, position };
+            });
+            const getClusterResult = ssDbscan(
+                getOriginInfo,
+                2.5,
+                20,
+                20,
+                0.08,
+                0.08
+            );
+        }
+    };
     const gridAnalysis = (): void => {};
     return (
         <div className="cluster-groups">
@@ -46,3 +74,10 @@ export default function OriginGrid() {
         </div>
     );
 }
+
+function mapStateToProps(state: any) {
+    const { typhoonLists } = state.typhoonInfo;
+    return { tyLists: typhoonLists };
+}
+
+export default connect(mapStateToProps)(OriginGrid);

@@ -1,175 +1,148 @@
 export interface TyphoonOrigin {
-    [key: string]: number[];
+    maxSpeed: number;
+    position: Array<number>;
+    tfdl: number;
+    tfbh: string;
 }
-
-export function kmeans(
-    arrayToProcess: Array<TyphoonOrigin>,
-    clustersCount: number
-) {
-    const groups: Array<Array<TyphoonOrigin>> = [];
-    const centroids = [];
-    let oldCentroids = [];
-    let changed = false;
-    for (let initGroups = 0; initGroups < clustersCount; initGroups++) {
-        groups[initGroups] = [];
-    }
-    const initialCentroids = Math.round(
-        arrayToProcess.length / (clustersCount + 1)
-    );
-    for (let i = 0; i < clustersCount; i++) {
-        const getKey = Object.keys(
-            arrayToProcess[initialCentroids * (i + 1)]
-        )[0];
-        centroids[i] = arrayToProcess[initialCentroids * (i + 1)][getKey];
-    }
-    do {
-        for (let i = 0; i < clustersCount; i++) {
-            groups[i] = [];
-        }
-
-        changed = false;
-
-        for (let i = 0; i < arrayToProcess.length; i++) {
-            let distance = -1;
-            let oldDistance = -1;
-            let newGroup;
-            for (let j = 0; j < clustersCount; j++) {
-                distance = spDistance(centroids[j], arrayToProcess[i]);
-                if (oldDistance == -1) {
-                    oldDistance = distance;
-                    newGroup = j;
-                } else if (distance <= oldDistance) {
-                    newGroup = j;
-                    oldDistance = distance;
-                }
-            }
-
-            groups[newGroup].push(arrayToProcess[i]);
-        }
-
-        oldCentroids = centroids.slice();
-
-        for (let j = 0; j < clustersCount; j++) {
-            centroids[j] = caculateNewCenter(groups[j]);
-        }
-
-        for (let j = 0; j < clustersCount; j++) {
-            if (centroids[j] != oldCentroids[j]) {
-                changed = true;
-            }
-        }
-    } while (changed === true);
-
-    return groups;
-}
-
-function spDistance(center: number[], point: TyphoonOrigin) {
-    const getPointKey = Object.keys(point)[0];
-    const getPointPosition = point[getPointKey];
-    return Math.sqrt(
-        Math.pow(center[0] - getPointPosition[0], 2) +
-            Math.pow(center[1] - center[1], 2)
-    );
-}
-
-function caculateNewCenter(eachGroup: Array<TyphoonOrigin>) {
-    const getSum = eachGroup.reduce(
-        (a, b) => {
-            const getPosition = b[Object.keys(b)[0]];
-            return [a[0] + getPosition[0], a[1] + getPosition[1]];
-        },
-        [0, 0]
-    );
-    return [getSum[0] / eachGroup.length, +getSum[1] / eachGroup.length];
+interface Neighbor {
+    DP: number;
+    neighbors: Array<number>;
+    S: number;
 }
 
 function spDist(a: TyphoonOrigin, b: TyphoonOrigin) {
-    const getOneKey = Object.keys(a)[0];
-    const getTwoKey = Object.keys(b)[0];
     return Math.sqrt(
-        Math.pow(a[getOneKey][0] - b[getTwoKey][0], 2) +
-            Math.pow(a[getOneKey][1] - b[getTwoKey][1], 2)
+        Math.pow(a['position'][0] - b['position'][0], 2) +
+            Math.pow(a['position'][1] - b['position'][1], 2)
     );
 }
 
-function retrieveNeighbors(
-    eps: number,
-    point: TyphoonOrigin,
-    cluster: Array<TyphoonOrigin>
-) {
-    const neighbors = []; // list of neighbor
-    for (let iter = 0; iter < cluster.length; iter++) {
-        const dist = spDist(point, cluster[iter]);
-        if (dist <= eps) {
-            neighbors.push(iter);
-        }
-    }
-    return neighbors;
+function rankDist(a: TyphoonOrigin, maxSpeed: number) {
+    return Math.abs(a['maxSpeed'] - maxSpeed);
 }
 
-export function dbscan(
+function retrieveNeighbors(
+    eps1: number,
+    eps2: number,
+    point: TyphoonOrigin,
+    cluster: Array<TyphoonOrigin>,
+    maxSpeed: number
+): Neighbor {
+    const neighbors = []; // list of neighbor
+    let m = 0;
+    let n = 0;
+    let DP = 0;
+    let S = 0;
+    for (let iter = 0; iter < cluster.length; iter++) {
+        const dist1 = spDist(point, cluster[iter]);
+        const dist2 = rankDist(point, maxSpeed);
+        if (dist1 <= eps1) {
+            neighbors.push(iter);
+            if (cluster[iter]['tfdl'] === 1) {
+                m++;
+            }
+            if (dist2 <= eps2) {
+                n++;
+            }
+        }
+    }
+    DP = m / neighbors.length;
+    S = n / neighbors.length;
+    return { neighbors, DP, S };
+}
+
+export function ssDbscan(
     result: Array<TyphoonOrigin>,
-    eps: number,
-    MinPts: number
+    eps1: number,
+    eps2: number,
+    minPoints: number,
+    deltae: number,
+    deltas: number
 ) {
     let clusterLabel = 0; // label meaning: 0:unmarked; 1,2,3,...:cluster label; "noise":noise
     const labels = new Array(result.length).fill(0); // new an 0 array to store labels
     const clusters = []; // final output
-
+    let currentDp = 0;
+    const cuc: number[] = [];
     // clustering data points
     for (let i = 0; i < result.length; i++) {
-        const neighbors = retrieveNeighbors(eps, result[i], result);
-        if (neighbors.length < MinPts) {
-            // if it is unmarked, mark it "noise"
-            if (labels[i] === 0) {
-                labels[i] = 'noise';
-            }
-        } else {
-            clusterLabel += 1; // construct a new cluster
-            const cluster = []; // construct cluster
-
-            // mark label for all unmarked neighbors
-            for (let j1 = 0; j1 < neighbors.length; j1++) {
-                // if no other labels
-                if (
-                    labels[neighbors[j1]] === 0 ||
-                    labels[neighbors[j1]] === 'noise'
-                ) {
-                    labels[neighbors[j1]] = clusterLabel;
-                    cluster.push(neighbors[j1]);
+        if (!cuc.includes(i)) {
+            const maxSpeed = result[i]['maxSpeed'];
+            const { neighbors, DP, S: S1 } = retrieveNeighbors(
+                eps1,
+                eps2,
+                result[i],
+                result,
+                maxSpeed
+            );
+            if (neighbors.length < minPoints) {
+                // if it is unmarked, mark it "noise"
+                if (labels[i] === 0) {
+                    labels[i] = 'noise';
                 }
-            }
+            } else {
+                clusterLabel += 1; // construct a new cluster
+                const cluster = []; // construct cluster
+                currentDp = DP;
+                // mark label for all unmarked neighbors
+                for (let j1 = 0; j1 < neighbors.length; j1++) {
+                    // if no other labels
+                    if (
+                        labels[neighbors[j1]] === 0 ||
+                        labels[neighbors[j1]] === 'noise'
+                    ) {
+                        labels[neighbors[j1]] = clusterLabel;
+                        cluster.push(neighbors[j1]);
+                        cuc.push(neighbors[j1]);
+                    }
+                }
 
-            // check the sub-circle of all objects
-            while (neighbors.length !== 0) {
-                const j2 = neighbors.pop();
-                const subNeighbors = retrieveNeighbors(eps, result[j2], result);
+                // check the sub-circle of all objects
+                while (neighbors.length !== 0) {
+                    const j2 = neighbors.pop();
+                    const {
+                        neighbors: subNeighbors,
+                        DP,
+                        S: S2,
+                    } = retrieveNeighbors(
+                        eps1,
+                        eps2,
+                        result[j2],
+                        result,
+                        maxSpeed
+                    );
 
-                // mark all unmarked neighbors
-                if (subNeighbors.length >= MinPts) {
-                    for (let k = 0; k < subNeighbors.length; k++) {
-                        // if no other labels
-                        if (
-                            labels[subNeighbors[k]] === 0 ||
-                            labels[subNeighbors[k]] === 'noise'
-                        ) {
-                            neighbors.push(subNeighbors[k]);
-                            labels[subNeighbors[k]] = clusterLabel;
-                            cluster.push(subNeighbors[k]);
+                    // mark all unmarked neighbors
+                    if (
+                        subNeighbors.length >= minPoints &&
+                        Math.abs(currentDp - DP) < deltae &&
+                        Math.abs(S2 - S1) <= deltas
+                    ) {
+                        for (let k = 0; k < subNeighbors.length; k++) {
+                            // if no other labels
+                            if (
+                                labels[subNeighbors[k]] === 0 ||
+                                labels[subNeighbors[k]] === 'noise'
+                            ) {
+                                neighbors.push(subNeighbors[k]);
+                                labels[subNeighbors[k]] = clusterLabel;
+                                cluster.push(subNeighbors[k]);
+                                cuc.push(subNeighbors[k]);
+                            }
                         }
                     }
                 }
-            }
 
-            // remove cluster of small size
-            if (cluster.length < MinPts) {
-                for (let j3 = 0; j3 < result.length; j3++) {
-                    if (labels[j3] === clusterLabel) {
-                        labels[j3] = 'noise';
+                // remove cluster of small size
+                if (cluster.length < minPoints) {
+                    for (let j3 = 0; j3 < result.length; j3++) {
+                        if (labels[j3] === clusterLabel) {
+                            labels[j3] = 'noise';
+                        }
                     }
+                } else {
+                    clusters.push(cluster);
                 }
-            } else {
-                clusters.push(cluster);
             }
         }
     }

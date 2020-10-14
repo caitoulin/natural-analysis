@@ -4,13 +4,13 @@ interface Coordinate {
 }
 interface EachPoint {
     time: string;
-    position: Coordinate;
+    positon: Coordinate;
     pressure: string;
     currentSpeed: string;
     windCircle: any;
 }
-interface EachTyphoon {
-    tfbh: number;
+export interface EachTyphoon {
+    tfbh: string;
     tfdl: number;
     maxstrong: string;
     maxp: number;

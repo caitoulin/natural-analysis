@@ -1,12 +1,12 @@
-export interface TyphoonOrigin {
+export interface TyphoonLandedOrigin {
     [key: string]: number[];
 }
 
 export function kmeans(
-    arrayToProcess: Array<TyphoonOrigin>,
+    arrayToProcess: Array<TyphoonLandedOrigin>,
     clustersCount: number
 ) {
-    const groups: Array<Array<TyphoonOrigin>> = [];
+    const groups: Array<Array<TyphoonLandedOrigin>> = [];
     const centroids = [];
     let oldCentroids = [];
     let changed = false;
@@ -63,7 +63,7 @@ export function kmeans(
     return groups;
 }
 
-function spDistance(center: number[], point: TyphoonOrigin) {
+function spDistance(center: number[], point: TyphoonLandedOrigin) {
     const getPointKey = Object.keys(point)[0];
     const getPointPosition = point[getPointKey];
     return Math.sqrt(
@@ -72,7 +72,7 @@ function spDistance(center: number[], point: TyphoonOrigin) {
     );
 }
 
-function caculateNewCenter(eachGroup: Array<TyphoonOrigin>) {
+function caculateNewCenter(eachGroup: Array<TyphoonLandedOrigin>) {
     const getSum = eachGroup.reduce(
         (a, b) => {
             const getPosition = b[Object.keys(b)[0]];
@@ -86,7 +86,7 @@ function caculateNewCenter(eachGroup: Array<TyphoonOrigin>) {
     ];
 }
 
-export function spDist(a: TyphoonOrigin, b: TyphoonOrigin) {
+export function spDist(a: TyphoonLandedOrigin, b: TyphoonLandedOrigin) {
     const getOneKey = Object.keys(a)[0];
     const getTwoKey = Object.keys(b)[0];
     return Math.sqrt(
@@ -99,8 +99,8 @@ function getDist(a: number[], b: number[]) {
 }
 function retrieveNeighbors(
     eps: number,
-    point: TyphoonOrigin,
-    cluster: Array<TyphoonOrigin>
+    point: TyphoonLandedOrigin,
+    cluster: Array<TyphoonLandedOrigin>
 ) {
     const neighbors = []; // list of neighbor
     for (let iter = 0; iter < cluster.length; iter++) {
@@ -113,7 +113,7 @@ function retrieveNeighbors(
 }
 
 export function dbscan(
-    result: Array<TyphoonOrigin>,
+    result: Array<TyphoonLandedOrigin>,
     eps: number,
     MinPts: number
 ) {

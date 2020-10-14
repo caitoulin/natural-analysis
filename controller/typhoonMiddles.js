@@ -10,10 +10,10 @@ const getTyListData = (req, res) => {
     res.send(allPart);
 };
 
-const getTyOrigin = (req, res) => {
+const getTyLandedOrigin = (req, res) => {
     res.header('Access-control-max-age', 5000);
     res.send(typhoonSolve.landedOrigin(landedTyphoonList));
 };
 
 exports.getTyListData = getTyListData;
-exports.getTyOrigin = getTyOrigin;
+exports.getTyLandedOrigin = getTyLandedOrigin;

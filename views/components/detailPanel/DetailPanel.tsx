@@ -1,14 +1,8 @@
 import React from 'react';
-import ClusterPanel from './ClusterPanel';
+import ClusterPanel from './LandedClusterPanel';
+import OriginGrid from './OriginGrid';
 import './detail.less';
-import { TyphoonOrigin } from '../../src/util/clusterOrigin';
-export default function DetailPanel({
-    index,
-    origin,
-}: {
-    index: string;
-    origin: Array<TyphoonOrigin>;
-}) {
+export default function DetailPanel({ index }: { index: string }) {
     const getPanel = (index: string) => {
         switch (index) {
             case '01000':
@@ -16,9 +10,9 @@ export default function DetailPanel({
             case '01001':
                 return <div></div>;
             case '01100':
-                return <ClusterPanel origin={origin} />;
+                return <ClusterPanel />;
             case '01101':
-                return <div></div>;
+                return <OriginGrid />;
             case '11000':
                 return <div></div>;
             case '11100':

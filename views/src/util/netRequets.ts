@@ -6,8 +6,8 @@ const axiosRequest = axios.create({
     timeout: 1000,
 });
 
-export function getTyphoonOrigin() {
-    return axiosRequest.get('/get/typhoonOrigin');
+export function getTyphoonLandedOrigin() {
+    return axiosRequest.get('/get/typhoonLandedOrigin');
 }
 
 export function getTyphoonLists() {
