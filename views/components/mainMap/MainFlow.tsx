@@ -2,10 +2,7 @@ import React from 'react';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
 import OSM from 'ol/source/OSM';
-import GeoJSON from 'ol/format/GeoJSON';
-import VectorSource from 'ol/source/Vector';
 import './main.less';
 import Menu from '../menuBar/Menu';
 import DetailPanel from '../detailPanel/DetailPanel';
@@ -14,7 +11,6 @@ import {
     getTyphoonLandedOrigin,
     getTyphoonLists,
 } from '../../src/util/netRequets';
-import * as turf from '@turf/turf';
 import {
     storeTyphoonData,
     getTyphoonData,
@@ -23,30 +19,17 @@ import {
 import {
     addLandeOrigin,
     addTyphonList,
+    addLandedTracks,
 } from '../../src/middleware/action/actions';
-import {
-    BBox,
-    Units,
-    Feature,
-    Polygon,
-    MultiPolygon,
-    Properties,
-} from '@turf/turf';
 import { connect } from 'react-redux';
 declare global {
     interface Window {
         LDmap: any;
     }
 }
-interface Option {
-    units?: Units;
-    properties?: Properties;
-    mask?: Feature<Polygon | MultiPolygon> | Polygon | MultiPolygon;
-}
 interface IState {
     index: string;
 }
-
 class MainFlow extends React.Component<any, IState> {
     constructor(props: any) {
         super(props);
@@ -71,53 +54,36 @@ class MainFlow extends React.Component<any, IState> {
         });
         this.handleTyphoonLandedOrigin();
     }
-    defaultGrids = (): void => {
-        const bbox: BBox = [98, 17.5, 124, 46];
-        const cellSide = 150;
-        const options: Option = { units: 'miles' };
-        const squareGrid = turf.squareGrid(bbox, cellSide, options);
-        const format = new GeoJSON();
-        const source = new VectorSource();
-        const allFeatures = format
-            .readFeatures(squareGrid)
-            .map((feature, index) => {
-                feature.setId(index);
-                return feature;
-            });
-        source.addFeatures(allFeatures);
-        const getLayer = new VectorLayer({ source: source });
-        window.LDmap.addLayer(getLayer);
-    };
-
     handleTyphoonLandedOrigin = async () => {
         const { dispatch } = this.props;
         try {
+            let typhoonLandedOrigin: any;
+            let typhoonList: any;
             if (!localStorage.getItem('landedOrigin')) {
-                const typhoonLandedOrigin: any = await getTyphoonLandedOrigin();
+                const requestLandedOrigin = await getTyphoonLandedOrigin();
+                typhoonLandedOrigin = requestLandedOrigin['data'];
                 localStorage.setItem(
                     'landedOrigin',
-                    JSON.stringify(typhoonLandedOrigin['data'])
+                    JSON.stringify(typhoonLandedOrigin)
                 );
-                dispatch(addLandeOrigin(typhoonLandedOrigin['data']));
+                dispatch(addLandeOrigin(typhoonLandedOrigin));
             } else {
-                const typhoonLandedOrigin = JSON.parse(
+                typhoonLandedOrigin = JSON.parse(
                     localStorage.getItem('landedOrigin')
                 );
-                dispatch(addLandeOrigin(typhoonLandedOrigin['data']));
+                dispatch(addLandeOrigin(typhoonLandedOrigin));
             }
-        } catch (err) {
-            console.error(err);
-        }
-        try {
             const getMessage = await isExistTyphoonList();
             if (getMessage === 1) {
-                const typhoonList = await getTyphoonData();
+                typhoonList = await getTyphoonData();
                 dispatch(addTyphonList(typhoonList));
             } else {
-                const typhoonList: any = await getTyphoonLists();
-                storeTyphoonData(typhoonList['data']);
-                dispatch(addTyphonList(typhoonList['data']));
+                const requestTyphoonList = await getTyphoonLists();
+                typhoonList = requestTyphoonList['data'];
+                storeTyphoonData(typhoonList);
+                dispatch(addTyphonList(typhoonList));
             }
+            dispatch(addLandedTracks(typhoonList, typhoonLandedOrigin));
         } catch (err) {
             console.error(err);
         }

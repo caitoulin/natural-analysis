@@ -7,7 +7,6 @@ import { EachTyphoon } from '../../src/util/handleIndexDB';
 import { TyphoonOrigin, ssDbscan } from '../../src/util/clusterOrigin';
 import { Point } from 'ol/geom';
 import { Feature } from 'ol';
-
 const colors = [
     'rgb(220,20,60)',
     'rgb(255,0,255)',
@@ -16,6 +15,8 @@ const colors = [
     'rgb(0,255,0)',
     'rgb(255,215,0)',
     'rgb(255,69,0)',
+    'rgb(131,175,155)',
+    'rgb(3,35,14)',
     'rgb(255,0,0)',
     'rgb(105,105,105)',
     'rgb(138,43,226)',
@@ -61,9 +62,34 @@ function OriginGrid({ tyLists }: { tyLists: Array<EachTyphoon> }) {
                 2.5,
                 20,
                 20,
-                0.08,
-                0.08
+                0.1,
+                0.1
             );
+            const getAllFeatures = getClusterResult
+                .map((item, index) => {
+                    return item.map((each) => {
+                        const getEach = getOriginInfo[each];
+                        const getEachFeature = new Feature({
+                            geometry: new Point(getEach['position']),
+                        });
+                        getEachFeature.setStyle(
+                            new Style({
+                                image: new Circle({
+                                    fill: new Fill({
+                                        color: colors[index],
+                                    }),
+                                    radius: 2,
+                                }),
+                            })
+                        );
+                        return getEachFeature;
+                    });
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+            vectorGridSource.addFeatures(getAllFeatures);
+            window.LDmap.addLayer(vectorGridLayer);
         }
     };
     const gridAnalysis = (): void => {};

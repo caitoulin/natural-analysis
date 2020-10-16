@@ -1,12 +1,14 @@
 import React from 'react';
 import ClusterPanel from './LandedClusterPanel';
 import OriginGrid from './OriginGrid';
+import InfluencedIndex from './InfluencedIndex';
+import classNames from 'classnames';
 import './detail.less';
 export default function DetailPanel({ index }: { index: string }) {
     const getPanel = (index: string) => {
         switch (index) {
             case '01000':
-                return <div></div>;
+                return <InfluencedIndex />;
             case '01001':
                 return <div></div>;
             case '01100':
@@ -20,5 +22,9 @@ export default function DetailPanel({ index }: { index: string }) {
         }
     };
 
-    return <div className="detail-panel">{getPanel(index)}</div>;
+    return (
+        <div className={classNames({ 'detail-panel': !!index })}>
+            {getPanel(index)}
+        </div>
+    );
 }

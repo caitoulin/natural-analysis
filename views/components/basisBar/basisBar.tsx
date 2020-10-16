@@ -90,7 +90,7 @@ class BasisBar extends React.Component<IProps, Istate> {
             window.LDmap.addLayer(vectorLayerLanded);
         }
     };
-    handleShowTracks = (): void => {
+    handleShowAllTracks = (): void => {
         if (vectorSourceTrack.getFeatures().length !== 0) {
             if (vectorLayerTrack.getVisible()) {
                 vectorLayerTrack.setVisible(false);
@@ -144,6 +144,7 @@ class BasisBar extends React.Component<IProps, Istate> {
             window.LDmap.addLayer(vectorLayerTrack);
         }
     };
+    handleShowLandedTracks = (): void => {};
     render() {
         const { isShow } = this.state;
         return (
@@ -158,7 +159,8 @@ class BasisBar extends React.Component<IProps, Istate> {
                         'no-show-bar': !isShow,
                     })}>
                     <span onClick={this.handleShowLanded}>登陆点</span>
-                    <span onClick={this.handleShowTracks}>台风轨迹</span>
+                    <span onClick={this.handleShowAllTracks}>台风轨迹</span>
+                    <span onClick={this.handleShowLandedTracks}>登陆轨迹</span>
                 </div>
             </div>
         );

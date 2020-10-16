@@ -3,21 +3,36 @@ import {
     TYPHOONLIST,
     LANDEDCLUSTER,
     ORIGINCLUSTER,
+    LANDEDTRACK,
 } from '../action/types';
 import { EachTyphoon } from '../../util/handleIndexDB';
 import { TyphoonOrigin } from '../../util/clusterOrigin';
+import { WINDCIRCLE } from '../../util/analysisProcess';
 interface TYORIGININFO {
     [key: string]: { location: string; position: Array<number> };
+}
+interface TRACKCOOR {
+    coordinate: Array<number>;
+    windCircle: WINDCIRCLE;
+    currentSpeed: number;
+}
+export interface LANDTRACK {
+    tfbh: string;
+    time: string;
+    landedPosition: Array<number>;
+    track: Array<TRACKCOOR>;
 }
 
 export interface INISTIAL {
     landedOrigin: Array<TYORIGININFO>;
     typhoonLists: Array<EachTyphoon>;
+    landedTracks: Array<LANDTRACK>;
     landedCluster: any;
     originCluster: Array<Array<TyphoonOrigin>>;
 }
 const initialState: INISTIAL = {
     landedOrigin: [],
+    landedTracks: [],
     typhoonLists: [],
     landedCluster: [],
     originCluster: [],
@@ -39,6 +54,8 @@ export default function typhoonInfo(
             return { ...state, landedCluster: data };
         case ORIGINCLUSTER:
             return { ...state, originCluster: data };
+        case LANDEDTRACK:
+            return { ...state, landedTracks: data };
         default:
             return state;
     }

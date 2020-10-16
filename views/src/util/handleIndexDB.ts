@@ -2,7 +2,7 @@ interface Coordinate {
     Lat: number;
     Lng: number;
 }
-interface EachPoint {
+export interface EachPoint {
     time: string;
     positon: Coordinate;
     pressure: string;
