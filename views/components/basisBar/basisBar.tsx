@@ -6,17 +6,21 @@ import { TyphoonLandedOrigin } from '../../src/util/clusterLanded';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import { Point, LineString } from 'ol/geom';
-import { Fill, Stroke, Circle, Style } from 'ol/style';
+import { Fill, Stroke, Circle, Style, Text } from 'ol/style';
 import Feature from 'ol/Feature';
 import { connect } from 'react-redux';
 import { EachTyphoon } from '../../src/util/handleIndexDB';
+import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
+import { getAllTRacksLanded } from '../../src/util/analysisProcess';
 interface Istate {
     isShow: boolean;
 }
 interface IProps {
     landedOrigin: Array<TyphoonLandedOrigin>;
     tyLists: Array<EachTyphoon>;
+    landedTracks: Array<LANDTRACK>;
 }
+const vectorSourceLandedTracks = new VectorSource();
 const vectorSourceLanded = new VectorSource();
 const vectorSourceTrack = new VectorSource();
 const vectorLayerLanded = new VectorLayer({
@@ -32,6 +36,21 @@ const vectorLayerLanded = new VectorLayer({
 });
 const vectorLayerTrack = new VectorLayer({
     source: vectorSourceTrack,
+    style: new Style({
+        image: new Circle({
+            fill: new Fill({
+                color: 'rgba(78,110,242)',
+            }),
+            radius: 2,
+        }),
+        stroke: new Stroke({
+            color: '#0F0',
+            width: 1,
+        }),
+    }),
+});
+const vectorLayerLandedTrack = new VectorLayer({
+    source: vectorSourceLandedTracks,
     style: new Style({
         image: new Circle({
             fill: new Fill({
@@ -144,7 +163,44 @@ class BasisBar extends React.Component<IProps, Istate> {
             window.LDmap.addLayer(vectorLayerTrack);
         }
     };
-    handleShowLandedTracks = (): void => {};
+    handleShowLandedTracks = (): void => {
+        const { landedTracks } = this.props;
+        if (vectorSourceLandedTracks.getFeatures().length !== 0) {
+            if (vectorLayerLandedTrack.getVisible()) {
+                vectorLayerLandedTrack.setVisible(false);
+            } else {
+                vectorLayerLandedTrack.setVisible(true);
+            }
+        } else {
+            const getLandedPoints = getAllTRacksLanded(landedTracks);
+            const lineFeatures = getLandedPoints
+                .map((item) => {
+                    const eachTrack = item['getAllLandedPoints'];
+                    const getStartPointFeature = new Feature({
+                        geometry: new Point(eachTrack[0]['coordinate']),
+                    });
+                    getStartPointFeature.setStyle(
+                        new Style({
+                            text: new Text({
+                                text: item['tfbh'].toString(),
+                            }),
+                        })
+                    );
+                    const getLinePoint = eachTrack.map((each) => {
+                        return each['coordinate'];
+                    });
+                    const getLineFeature = new Feature({
+                        geometry: new LineString(getLinePoint),
+                    });
+                    return [getStartPointFeature, getLineFeature];
+                })
+                .reduce((pre, cur) => {
+                    return pre.concat(cur);
+                }, []);
+            vectorSourceLandedTracks.addFeatures(lineFeatures);
+            window.LDmap.addLayer(vectorLayerLandedTrack);
+        }
+    };
     render() {
         const { isShow } = this.state;
         return (
@@ -168,8 +224,8 @@ class BasisBar extends React.Component<IProps, Istate> {
 }
 
 function mapStateToProps(state: any) {
-    const { landedOrigin, typhoonLists } = state.typhoonInfo;
-    return { landedOrigin, tyLists: typhoonLists };
+    const { landedOrigin, typhoonLists, landedTracks } = state.typhoonInfo;
+    return { landedOrigin, tyLists: typhoonLists, landedTracks };
 }
 
 export default connect(mapStateToProps)(BasisBar);

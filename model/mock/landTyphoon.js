@@ -487,10 +487,6 @@ module.exports = {
         location: '福建省泉州市惠安县东园镇',
         position: [118.7392, 24.9044],
     },
-    5612: {
-        location: '浙江省宁波市象山县丹城镇',
-        position: [121.8747, 29.4679],
-    },
     5704: { location: '台湾省台东县成功镇', position: [121.3516, 23.1061] },
     5705: {
         location: '广东省深圳市龙岗区大鹏半岛',
@@ -525,9 +521,9 @@ module.exports = {
         location: '福建省福州市连江县安凯乡',
         position: [119.8293, 26.3538],
     },
-    5915: {
-        location: '广东省汕尾市海丰市鲘门镇',
-        position: [115.0883, 22.8064],
+    5914: {
+        location: '后海',
+        position: [110.7, 21],
     },
     5925: { location: '台湾省屏东县恒春镇', position: [119.2972, 26.104] },
     6006: { location: '香港特别行政区', position: [114.1746, 22.2907] },
@@ -597,7 +593,6 @@ module.exports = {
     6729: { location: '广东徐闻', position: [110.1717, 20.3278] },
     6731: { location: '广东湛江', position: [110.3545, 21.2733] },
     6733: { location: '台湾花莲', position: [121.9637, 24.084] },
-    6803: { location: '海南三亚', position: [109.5079, 18.2547] },
     6805: { location: '海南万宁', position: [110.3886, 18.7954] },
     6809: { location: '香港特别行政区', position: [114.1746, 22.2907] },
     6812: { location: '广东湛江', position: [110.3545, 21.2733] },
@@ -1055,8 +1050,8 @@ module.exports = {
         location: '海南省陵水黎族自治县英州镇',
         position: [109.8592, 18.4488],
     },
-    9205: { location: '海南省琼海市潭门镇', position: [110.6116, 19.2422] },
-    9206: {
+    9206: { location: '海南省琼海市潭门镇', position: [110.6116, 19.2422] },
+    9207: {
         location: '广东省珠海市金湾区横琴镇',
         position: [113.5023, 22.1156],
     },

@@ -11,7 +11,7 @@ import { WINDCIRCLE } from '../../util/analysisProcess';
 interface TYORIGININFO {
     [key: string]: { location: string; position: Array<number> };
 }
-interface TRACKCOOR {
+export interface TRACKCOOR {
     coordinate: Array<number>;
     windCircle: WINDCIRCLE;
     currentSpeed: number;

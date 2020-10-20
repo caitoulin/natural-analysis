@@ -54,7 +54,7 @@ export function kmeans(
         }
 
         for (let j = 0; j < clustersCount; j++) {
-            if (getDist(centroids[j], oldCentroids[j]) > 0.05) {
+            if (getDist(centroids[j], oldCentroids[j]) > 0.02) {
                 changed = true;
             }
         }
@@ -68,7 +68,7 @@ function spDistance(center: number[], point: TyphoonLandedOrigin) {
     const getPointPosition = point[getPointKey];
     return Math.sqrt(
         Math.pow(center[0] - getPointPosition[0], 2) +
-            Math.pow(center[1] - center[1], 2)
+            Math.pow(center[1] - getPointPosition[1], 2)
     );
 }
 
@@ -180,4 +180,32 @@ export function dbscan(
     }
 
     return clusters;
+}
+
+/**
+ * @param arrayToProcess 聚类的点
+ * 返回混合聚类的值
+ */
+export function combineCluster(arrayToProcess: Array<TyphoonLandedOrigin>) {
+    const getDbscanResult = dbscan(arrayToProcess, 0.5, 2).filter(
+        (each) => each.length > 10
+    );
+    const getLongRepeatCluster = getDbscanResult[0].map((item) => {
+        return arrayToProcess[item];
+    });
+    const getShortResult = getDbscanResult[1].map((item) => {
+        return arrayToProcess[item];
+    });
+    const remainPoint = arrayToProcess.filter((item, index) => {
+        return !getDbscanResult.reduce((a, b) => a.concat(b)).includes(index);
+    });
+    const getRepeatKemeansCluestr = kmeans(getLongRepeatCluster, 4);
+    const getRemainKemeansCluestr = kmeans(remainPoint, 4);
+    getRepeatKemeansCluestr.push(getRemainKemeansCluestr[2]); // 2与3类符合规则点数大于12个
+    getRepeatKemeansCluestr.push(getRemainKemeansCluestr[3]);
+    const getTwoCluster = kmeans(getRemainKemeansCluestr[0], 2);
+    Array.prototype.push.apply(getShortResult, getTwoCluster[0]);
+    getRepeatKemeansCluestr.push(getShortResult);
+    getRepeatKemeansCluestr.push(getTwoCluster[1]);
+    return getRepeatKemeansCluestr;
 }

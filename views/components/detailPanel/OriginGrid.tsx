@@ -6,7 +6,9 @@ import { Fill, Circle, Style, Stroke } from 'ol/style';
 import { EachTyphoon } from '../../src/util/handleIndexDB';
 import { TyphoonOrigin, ssDbscan } from '../../src/util/clusterOrigin';
 import { Point } from 'ol/geom';
+import * as turf from '@turf/turf';
 import { Feature } from 'ol';
+import GeoJSON from 'ol/format/GeoJSON';
 const colors = [
     'rgb(220,20,60)',
     'rgb(255,0,255)',
@@ -67,11 +69,13 @@ function OriginGrid({ tyLists }: { tyLists: Array<EachTyphoon> }) {
             );
             const getAllFeatures = getClusterResult
                 .map((item, index) => {
-                    return item.map((each) => {
+                    const polyConvex: any = [];
+                    const pointFeatures = item.map((each) => {
                         const getEach = getOriginInfo[each];
                         const getEachFeature = new Feature({
                             geometry: new Point(getEach['position']),
                         });
+                        polyConvex.push(turf.point(getEach['position']));
                         getEachFeature.setStyle(
                             new Style({
                                 image: new Circle({
@@ -84,6 +88,13 @@ function OriginGrid({ tyLists }: { tyLists: Array<EachTyphoon> }) {
                         );
                         return getEachFeature;
                     });
+                    const pointsHull = turf.concave(
+                        turf.featureCollection(polyConvex),
+                        { units: 'degrees', maxEdge: 3 }
+                    );
+                    const format = new GeoJSON();
+                    const convexFeature = format.readFeature(pointsHull);
+                    return [...pointFeatures, convexFeature];
                 })
                 .reduce((a, b) => {
                     return a.concat(b);

@@ -6,10 +6,13 @@ import { Fill, Circle, Style } from 'ol/style';
 import {
     kmeans,
     dbscan,
+    combineCluster,
     TyphoonLandedOrigin,
 } from '../../src/util/clusterLanded';
 import { Point } from 'ol/geom';
 import { Feature } from 'ol';
+import * as turf from '@turf/turf';
+import GeoJSON from 'ol/format/GeoJSON';
 const colors = [
     'rgb(220,20,60)',
     'rgb(255,0,255)',
@@ -108,9 +111,13 @@ function ClusterPanel({
                 vectorDbscanLayer.setVisible(true);
             }
         } else {
-            const getDbscanResult = dbscan(landedOrigin, 0.3, 2);
+            const getDbscanResult = dbscan(landedOrigin, 0.5, 2);
             const getAllFeatures = getDbscanResult
+                .filter((each) => {
+                    return each.length > 10;
+                })
                 .map((item, index) => {
+                    console.log(item);
                     return item.map((each) => {
                         const getKey = Object.keys(landedOrigin[each])[0];
                         const eachFeature = new Feature({
@@ -144,6 +151,33 @@ function ClusterPanel({
                 vectorCombinLayer.setVisible(true);
             }
         } else {
+            const getCombineResult = combineCluster(landedOrigin);
+            const getAllFeatures = getCombineResult
+                .map((item, index) => {
+                    return item.map((each) => {
+                        const getKey = Object.keys(each)[0];
+                        const getFeature = new Feature({
+                            geometry: new Point(each[getKey]),
+                        });
+                        getFeature.setStyle(
+                            new Style({
+                                image: new Circle({
+                                    fill: new Fill({
+                                        color: colors[index],
+                                    }),
+                                    radius: 2,
+                                }),
+                            })
+                        );
+                        return getFeature;
+                    });
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+
+            vectorCombiSource.addFeatures(getAllFeatures);
+            window.LDmap.addLayer(vectorCombinLayer);
         }
     };
     return (

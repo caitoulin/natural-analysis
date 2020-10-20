@@ -13,3 +13,7 @@ export function getTyphoonLandedOrigin() {
 export function getTyphoonLists() {
     return axiosRequest.get('/get/typhoonList');
 }
+
+export function getInfluenceIndex() {
+    return axiosRequest.get('/get/influenceIndex');
+}

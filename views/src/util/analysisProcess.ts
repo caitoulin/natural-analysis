@@ -1,4 +1,5 @@
 import { EachPoint } from './handleIndexDB';
+import { TRACKCOOR, LANDTRACK } from '../middleware/reducer/typhoonInfo';
 export interface WINDCIRCLE {
     sevenCicle: number;
     tenCicle: number;
@@ -81,4 +82,147 @@ export function getRankWindCircle(typhoonPoint: EachPoint): WINDCIRCLE {
             twelveCicle: getValue.length > 2 ? getValue[2] : 0,
         };
     }
+}
+
+export function getSpatialDistance(
+    landedPosition: Array<number>,
+    eachTrackPoint: TRACKCOOR
+) {
+    return Math.sqrt(
+        Math.pow(landedPosition[0] - eachTrackPoint['coordinate'][0], 2) +
+            Math.pow(landedPosition[1] - eachTrackPoint['coordinate'][1], 2)
+    );
+}
+
+export function getInterpolationPoints(
+    prePoint: TRACKCOOR,
+    curPoint: TRACKCOOR
+): Array<TRACKCOOR> {
+    const n = 2;
+    const coorXDeviation = [
+        curPoint['coordinate'][0] - prePoint['coordinate'][0],
+        curPoint['coordinate'][1] - prePoint['coordinate'][1],
+    ];
+    const proDeviation = [
+        curPoint['currentSpeed'] - prePoint['currentSpeed'],
+        curPoint['windCircle']['sevenCicle'] -
+            prePoint['windCircle']['sevenCicle'],
+        curPoint['windCircle']['tenCicle'] - prePoint['windCircle']['tenCicle'],
+        curPoint['windCircle']['twelveCicle'] -
+            prePoint['windCircle']['twelveCicle'],
+    ];
+    const getArray = new Array(n).fill('').map((item, index) => {
+        const coorX =
+            (coorXDeviation[0] * (index + 1)) / (n + 1) +
+            prePoint['coordinate'][0];
+        const coorY =
+            (coorXDeviation[1] * (index + 1)) / (n + 1) +
+            prePoint['coordinate'][1];
+        const currentSpeed =
+            (proDeviation[0] * (index + 1)) / (n + 1) +
+            prePoint['currentSpeed'];
+        const windCircle = {
+            sevenCicle:
+                (proDeviation[1] * (index + 1)) / (n + 1) +
+                prePoint['windCircle']['sevenCicle'],
+            tenCicle:
+                (proDeviation[2] * (index + 1)) / (n + 1) +
+                prePoint['windCircle']['tenCicle'],
+            twelveCicle:
+                (proDeviation[3] * (index + 1)) / (n + 1) +
+                prePoint['windCircle']['tenCicle'],
+        };
+        return { coordinate: [coorX, coorY], currentSpeed, windCircle };
+    });
+    return getArray;
+}
+
+export function getColor(value: number) {
+    const colors = [
+        '#006837',
+        '#1a9850',
+        '#66bd63',
+        '#a6d96a',
+        '#d9ef8b',
+        '#ffffbf',
+        '#fee08b',
+        '#fdae61',
+        '#f46d43',
+        '#d73027',
+        '#a50026',
+    ];
+    if (value <= 20) return colors[0];
+    if (value <= 90) return colors[1];
+    if (value <= 200) return colors[2];
+    if (value <= 400) return colors[3];
+    if (value <= 700) return colors[4];
+    if (value <= 1100) return colors[5];
+    if (value <= 1600) return colors[6];
+    if (value <= 2000) return colors[7];
+    if (value <= 2500) return colors[8];
+    if (value <= 3000) return colors[9];
+    return colors[10];
+}
+
+function getNeareastIndex(eachTrack: LANDTRACK) {
+    const { landedPosition, track } = eachTrack;
+    const getMinDistancePoint = track.reduce(
+        (pre, cur, index) => {
+            const preDistance = getSpatialDistance(landedPosition, pre['val']);
+            const curDistance = getSpatialDistance(landedPosition, cur);
+            if (curDistance < preDistance) {
+                pre['val'] = cur;
+                pre['index'] = index;
+            }
+            return pre;
+        },
+        { val: track[0], index: 0 }
+    );
+    return getMinDistancePoint['index'];
+}
+
+/**
+ * @param landedTracks 登陆的台风轨迹
+ * return 截取并插值每条轨迹登陆后的所有轨迹点
+ */
+export function getInterplotTRacksLanded(landedTracks: Array<LANDTRACK>) {
+    const getrAllLandedData = landedTracks.map((item) => {
+        const { track, tfbh, time } = item;
+        const nearestIndex = getNeareastIndex(item);
+        const getAllLandedPoints = [];
+        for (let i = nearestIndex - 1; i < track.length - 1; i++) {
+            if (track[i]['windCircle']['sevenCicle'] !== 0)
+                getAllLandedPoints.push(track[i]);
+            if (
+                track[i]['windCircle']['sevenCicle'] !== 0 ||
+                track[i + 1]['windCircle']['sevenCicle'] !== 0
+            ) {
+                const interploatPoints = getInterpolationPoints(
+                    track[i],
+                    track[i + 1]
+                );
+                getAllLandedPoints.push(...interploatPoints);
+            }
+        }
+        if (track[track.length - 1]['windCircle']['sevenCicle'] !== 0)
+            getAllLandedPoints.push(track[track.length - 1]);
+        return { tfbh, time, getAllLandedPoints };
+    });
+    return getrAllLandedData;
+}
+
+/**
+ *
+ * @param landedTracks  台风登陆的轨迹
+ *  获取未插值且登陆后的轨迹点
+ */
+
+export function getAllTRacksLanded(landedTracks: Array<LANDTRACK>) {
+    const getAllLandedData = landedTracks.map((item) => {
+        const { track, tfbh, time } = item;
+        const nearestIndex = getNeareastIndex(item);
+        const getAllLandedPoints = track.slice(nearestIndex - 1);
+        return { tfbh, time, getAllLandedPoints };
+    });
+    return getAllLandedData;
 }

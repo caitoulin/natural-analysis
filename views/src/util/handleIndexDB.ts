@@ -5,7 +5,7 @@ interface Coordinate {
 export interface EachPoint {
     time: string;
     positon: Coordinate;
-    pressure: string;
+    pressure?: string;
     currentSpeed: string;
     windCircle: any;
 }
