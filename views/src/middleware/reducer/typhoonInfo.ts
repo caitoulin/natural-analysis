@@ -22,14 +22,18 @@ export interface LANDTRACK {
     landedPosition: Array<number>;
     track: Array<TRACKCOOR>;
 }
-
+export interface CLUSTERSEG {
+    segment: Array<Array<Array<number>>>;
+    data: Array<any>;
+}
 export interface INISTIAL {
     landedOrigin: Array<TYORIGININFO>;
     typhoonLists: Array<EachTyphoon>;
     landedTracks: Array<LANDTRACK>;
-    landedCluster: any;
+    landedCluster: Array<CLUSTERSEG>;
     originCluster: Array<Array<TyphoonOrigin>>;
 }
+
 const initialState: INISTIAL = {
     landedOrigin: [],
     landedTracks: [],

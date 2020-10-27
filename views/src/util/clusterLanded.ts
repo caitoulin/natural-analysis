@@ -209,3 +209,50 @@ export function combineCluster(arrayToProcess: Array<TyphoonLandedOrigin>) {
     getRepeatKemeansCluestr.push(getTwoCluster[1]);
     return getRepeatKemeansCluestr;
 }
+
+export function splitSegment() {
+    const getSegment = [];
+    getSegment[0] = [
+        [118.1, 24.05],
+        [119.93, 25.49],
+        [122.01, 28.94],
+    ];
+    getSegment[1] = [
+        [114.22, 22.07],
+        [116.52, 22.9],
+        [118.1, 24.05],
+    ];
+    getSegment[2] = [
+        [110.6, 21.12],
+        [114.22, 22.07],
+    ];
+    getSegment[3] = [
+        [108.41, 18.7],
+        [109.57, 18.11],
+        [111.12, 19.65],
+        [110.6, 21.12],
+    ];
+    getSegment[4] = [
+        [120.64, 34.18],
+        [122.77, 37.32],
+        [121.66, 38.82],
+        [124.15, 39.77],
+    ];
+    getSegment[5] = [
+        [122.01, 28.94],
+        [122.6, 30.99],
+        [120.64, 34.18],
+    ];
+    getSegment[6] = [
+        [120.04, 23.62],
+        [119.91, 22.78],
+        [120.75, 21.86],
+        [122.08, 25.15],
+    ];
+    getSegment[7] = [
+        [108.09, 21.52],
+        [109.17, 21.37],
+        [109.93, 20.2],
+    ];
+    return getSegment;
+}

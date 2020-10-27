@@ -226,3 +226,30 @@ export function getAllTRacksLanded(landedTracks: Array<LANDTRACK>) {
     });
     return getAllLandedData;
 }
+
+export function getCircleRadius(length: number) {
+    if (length < 10) return 2;
+    if (length < 30) return 5;
+    if (length < 100) return 8;
+    if (length < 200) return 12;
+    if (length < 400) return 16;
+    if (length < 600) return 20;
+    if (length < 800) return 24;
+    if (length < 1000) return 30;
+}
+
+export function getRotation(start: number[], end: number[]) {
+    const dx = end[0] - start[0];
+    const dy = end[1] - start[1];
+    const rotation = Math.atan2(dy, dx);
+    return rotation;
+}
+
+export function chooseClusterIndex(flattenLandCluster: any, tfbh: string) {
+    for (let i = 0; i < flattenLandCluster.length; i++) {
+        const getKeys = Object.keys(flattenLandCluster[i]);
+        if (getKeys.indexOf(tfbh) !== -1) {
+            return i.toString();
+        }
+    }
+}

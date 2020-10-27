@@ -2,17 +2,19 @@ import React from 'react';
 import { connect } from 'react-redux';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import { Fill, Circle, Style } from 'ol/style';
+import { Fill, Circle, Style, Text, Stroke } from 'ol/style';
 import {
     kmeans,
     dbscan,
     combineCluster,
     TyphoonLandedOrigin,
+    splitSegment,
 } from '../../src/util/clusterLanded';
-import { Point } from 'ol/geom';
+import { getCircleRadius } from '../../src/util/analysisProcess';
+import { combineLandedCluster } from '../../src/middleware/action/actions';
+import { LineString, Point } from 'ol/geom';
 import { Feature } from 'ol';
-import * as turf from '@turf/turf';
-import GeoJSON from 'ol/format/GeoJSON';
+import { Dispatch } from 'redux';
 const colors = [
     'rgb(220,20,60)',
     'rgb(255,0,255)',
@@ -25,6 +27,17 @@ const colors = [
     'rgb(105,105,105)',
     'rgb(138,43,226)',
 ];
+const landedCenterPosition = [
+    [120.85, 26.04],
+    [116.57, 22.74],
+    [112.46, 21.27],
+    [110.7, 18.63],
+    [123.32, 37.39],
+    [122.44, 32.08],
+    [121.79, 23.45],
+    [109.1, 21.2],
+];
+const vectorSegmentSource = new VectorSource();
 const vectorKmeansSource = new VectorSource();
 const vectorDbscanSource = new VectorSource();
 const vectorCombiSource = new VectorSource();
@@ -61,11 +74,26 @@ const vectorCombinLayer = new VectorLayer({
         }),
     }),
 });
+const vectorSegmntLayer = new VectorLayer({
+    source: vectorSegmentSource,
+    style: new Style({
+        image: new Circle({
+            fill: new Fill({
+                color: 'rgba(0,0,0,0,0.6)',
+            }),
+            radius: 2,
+        }),
+    }),
+});
 const clusterKmenasCount = 7;
 function ClusterPanel({
     landedOrigin,
+    landedCluster,
+    dispatch,
 }: {
     landedOrigin: Array<TyphoonLandedOrigin>;
+    landedCluster: Array<any>;
+    dispatch: Dispatch;
 }) {
     const handleKmeansCluster = (): void => {
         if (vectorKmeansSource.getFeatures().length !== 0) {
@@ -152,6 +180,7 @@ function ClusterPanel({
             }
         } else {
             const getCombineResult = combineCluster(landedOrigin);
+            const getSegment = splitSegment();
             const getAllFeatures = getCombineResult
                 .map((item, index) => {
                     return item.map((each) => {
@@ -175,9 +204,78 @@ function ClusterPanel({
                 .reduce((a, b) => {
                     return a.concat(b);
                 }, []);
-
+            const getClusterSegment = getCombineResult.map((item, index) => {
+                return {
+                    segment: getSegment[index],
+                    data: item,
+                };
+            });
+            dispatch(combineLandedCluster(getClusterSegment));
             vectorCombiSource.addFeatures(getAllFeatures);
             window.LDmap.addLayer(vectorCombinLayer);
+        }
+    };
+    const handleShowSegment = (): void => {
+        if (vectorSegmentSource.getFeatures().length !== 0) {
+            if (vectorSegmntLayer.getVisible()) {
+                vectorSegmntLayer.setVisible(false);
+            } else {
+                vectorSegmntLayer.setVisible(true);
+            }
+        } else {
+            const segmentFeatures = landedCluster
+                .map((item, index) => {
+                    const { segment, data } = item;
+                    const getRadius = getCircleRadius(data.length);
+                    const countFeature = new Feature({
+                        geometry: new Point(landedCenterPosition[index]),
+                    });
+                    countFeature.setStyle(
+                        new Style({
+                            image: new Circle({
+                                radius: getRadius,
+                                fill: new Fill({
+                                    color: 'rgb(255,193,37)',
+                                }),
+                            }),
+                        })
+                    );
+                    const linefeature = new Feature({
+                        geometry: new LineString(segment),
+                    });
+                    const pointStartFeature = new Feature({
+                        geometry: new Point(segment[0]),
+                    });
+                    const pointEndFeature = new Feature({
+                        geometry: new Point(segment[segment.length - 1]),
+                    });
+                    linefeature.setStyle(
+                        new Style({
+                            stroke: new Stroke({
+                                width: 2,
+                                color: colors[index],
+                            }),
+                            text: new Text({
+                                offsetX: -3,
+                                offsetY: -3,
+                                font: '15px Microsoft YaHei',
+                                text: index.toString(),
+                                fill: new Fill({ color: '#000000' }),
+                            }),
+                        })
+                    );
+                    return [
+                        pointStartFeature,
+                        linefeature,
+                        pointEndFeature,
+                        countFeature,
+                    ];
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+            vectorSegmentSource.addFeatures(segmentFeatures);
+            window.LDmap.addLayer(vectorSegmntLayer);
         }
     };
     return (
@@ -185,12 +283,13 @@ function ClusterPanel({
             <button onClick={handleKmeansCluster}>Kmenas聚类</button>
             <button onClick={handleDbscanCluster}>DBSCAN聚类</button>
             <button onClick={handleCombinationCluster}>结合聚类</button>
+            <button onClick={handleShowSegment}>分割段</button>
         </div>
     );
 }
 function mapStateToProps(state: any) {
-    const { landedOrigin } = state.typhoonInfo;
-    return { landedOrigin };
+    const { landedOrigin, landedCluster } = state.typhoonInfo;
+    return { landedOrigin, landedCluster };
 }
 
 export default connect(mapStateToProps)(ClusterPanel);
