@@ -2,15 +2,18 @@ import React from 'react';
 import { connect } from 'react-redux';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import { Fill, Circle, Style, Stroke } from 'ol/style';
+import { Fill, Circle, Style, Stroke, Icon, Text } from 'ol/style';
 import { EachTyphoon } from '../../src/util/handleIndexDB';
 import { TyphoonOrigin, ssDbscan } from '../../src/util/clusterOrigin';
-import { Point } from 'ol/geom';
+import { LineString, Point } from 'ol/geom';
 import * as turf from '@turf/turf';
 import { Feature } from 'ol';
 import {
     getCircleRadius,
     chooseClusterIndex,
+    getRotation,
+    getLineWidth,
+    caclcuCenter,
 } from '../../src/util/analysisProcess';
 import { CLUSTERSEG } from '../../src/middleware/reducer/typhoonInfo';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -30,7 +33,7 @@ const colors = [
 ];
 const originCenterPosition = [
     [133.31, 14.73],
-    [116.41, 17.4],
+    [116.41, 16.4],
     [152.98, 15.21],
     [116.59, 10.31],
     [166.37, 6.39],
@@ -175,8 +178,15 @@ class OriginGrid extends React.Component<IProps, IState> {
                     image: new Circle({
                         radius: width,
                         fill: new Fill({
-                            color: 'rgba(220,20,60,0.6)',
+                            color: 'rgba(220,20,60)',
                         }),
+                    }),
+                    text: new Text({
+                        font: '12px Calibri,sans-serif',
+                        fill: new Fill({
+                            color: '#000',
+                        }),
+                        text: item.length.toString(),
                     }),
                 })
             );
@@ -211,13 +221,61 @@ class OriginGrid extends React.Component<IProps, IState> {
             item.forEach((each) => {
                 const { tfbh, tfdl } = getOriginInfo[each];
                 if (tfdl === 0) return;
-                const getIndex = chooseClusterIndex(flattenLandCluster, tfbh);
+                const getIndex = chooseClusterIndex(
+                    flattenLandCluster,
+                    tfbh.toString()
+                );
                 if (getIndex) {
                     getCluterCount[getIndex] = getCluterCount[getIndex] + 1;
                 }
             });
             return getCluterCount;
         });
+        const getArrowFeatures = getArrowDirection
+            .map((item, index) => {
+                const getIndexCoor = originCenterPosition[index];
+                const allKeyFeatures: any = [];
+                for (const [key, value] of Object.entries(item)) {
+                    if (value === 0) continue;
+                    const transKey = parseInt(key);
+                    const rotation = getRotation(
+                        getIndexCoor,
+                        landedCenterPosition[transKey]
+                    );
+                    const getCenter = caclcuCenter(
+                        getIndexCoor,
+                        landedCenterPosition[transKey]
+                    );
+                    const feature = new Feature({
+                        geometry: new LineString([
+                            getIndexCoor,
+                            landedCenterPosition[transKey],
+                        ]),
+                    });
+                    feature.setStyle([
+                        new Style({
+                            stroke: new Stroke({
+                                width: getLineWidth(value),
+                                color: 'rgb(38,188,213)',
+                            }),
+                        }),
+                        new Style({
+                            geometry: new Point(getCenter),
+                            image: new Icon({
+                                src:
+                                    'http://localhost:2379/public/images/arrow.png',
+                                anchor: [0.75, 0.5],
+                                rotateWithView: true,
+                                rotation: -rotation,
+                            }),
+                        }),
+                    ]);
+                    allKeyFeatures.push(feature);
+                }
+                return allKeyFeatures;
+            })
+            .reduce((a, b) => a.concat(b), []);
+        vectorAnalysisiSource.addFeatures(getArrowFeatures);
     };
 
     render() {

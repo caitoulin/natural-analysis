@@ -245,11 +245,83 @@ export function getRotation(start: number[], end: number[]) {
     return rotation;
 }
 
+export function caclcuCenter(start: number[], end: number[]) {
+    const x = (end[0] + start[0]) / 2;
+    const y = (end[1] + start[1]) / 2;
+    return [+x.toFixed(2), +y.toFixed(2)];
+}
+
+/**
+ * @param count 在各登陆段上登陆的台风数量
+ */
+export function getLineWidth(count: any) {
+    if (count < 5) return 1;
+    if (count < 15) return 2;
+    if (count < 30) return 4;
+    if (count < 50) return 6;
+    if (count < 70) return 8;
+    return 10;
+}
+/**
+ * @param flattenLandCluster 登陆段上的台风登陆信息
+ * @param tfbh 台风编号
+ */
 export function chooseClusterIndex(flattenLandCluster: any, tfbh: string) {
     for (let i = 0; i < flattenLandCluster.length; i++) {
         const getKeys = Object.keys(flattenLandCluster[i]);
-        if (getKeys.indexOf(tfbh) !== -1) {
+        if (getKeys.includes(tfbh)) {
             return i.toString();
+        }
+    }
+}
+
+function getValueColor(value: number) {
+    const colors = [
+        '#006837',
+        '#1a9850',
+        '#66bd63',
+        '#a6d96a',
+        '#d9ef8b',
+        '#ffffbf',
+        '#fee08b',
+        '#fdae61',
+        '#f46d43',
+        '#d73027',
+        '#a50026',
+    ];
+}
+export function plotGrids(
+    canvas: any,
+    grids: number[][],
+    renderExtent: number[][],
+    grid: number[],
+    xlim: number[],
+    ylim: number[]
+) {
+    const gridWidth = (renderExtent[1][0] - renderExtent[0][0]) / grid[0];
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const range = [xlim[1] - xlim[0], ylim[1] - ylim[0]];
+    const n = grids.length;
+    const m = grids[0].length;
+    const wx = Math.ceil((gridWidth * canvas.width) / (xlim[1] - xlim[0]));
+    const wy = Math.ceil((gridWidth * canvas.height) / (ylim[1] - ylim[0]));
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < m; j++) {
+            if (grids[i][j] === 0) continue;
+            const x =
+                (canvas.width *
+                    (i * gridWidth + renderExtent[0][0] - xlim[0])) /
+                range[0];
+            const y =
+                canvas.height *
+                (1 - (j * gridWidth + renderExtent[0][1] - ylim[0]) / range[1]);
+            ctx.fillRect(
+                Math.round(x - wx / 2),
+                Math.round(y - wy / 2),
+                wx,
+                wy
+            );
         }
     }
 }

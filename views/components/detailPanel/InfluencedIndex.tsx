@@ -116,7 +116,7 @@ function InfluencedIndex({ landedTracks }: { landedTracks: Array<LANDTRACK> }) {
                                     fill: new Fill({
                                         color: '#000',
                                     }),
-                                    text: index.toString(),
+                                    text: indexKey[key]['total'].toString(),
                                 }),
                             })
                         );

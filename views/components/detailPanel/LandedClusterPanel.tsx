@@ -84,6 +84,7 @@ const vectorSegmntLayer = new VectorLayer({
             radius: 2,
         }),
     }),
+    zIndex: 50,
 });
 const clusterKmenasCount = 7;
 function ClusterPanel({

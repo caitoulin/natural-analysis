@@ -17,3 +17,7 @@ export function getTyphoonLists() {
 export function getInfluenceIndex() {
     return axiosRequest.get('/get/influenceIndex');
 }
+
+export function getTracksGrid() {
+    return axiosRequest.get('/get/grid');
+}

@@ -13,7 +13,7 @@ const options = {
     },
 };
 
-app.use(express.static(path.join(__dirname, 'public'), options));
+app.use('/public', express.static(path.join(__dirname, 'public'), options));
 app.all('*', function (req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://localhost:3000' || '*');
     res.header(
