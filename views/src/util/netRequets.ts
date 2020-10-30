@@ -3,7 +3,7 @@ const locationIp = 'http://localhost:2379';
 
 const axiosRequest = axios.create({
     baseURL: locationIp,
-    timeout: 1000,
+    timeout: 5000,
 });
 
 export function getTyphoonLandedOrigin() {

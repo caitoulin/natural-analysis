@@ -31,7 +31,7 @@ export default class TrackDensity extends React.Component<any, IState> {
             [98, 3],
             [178, 83],
         ];
-        const grid = [0.5, 0.5];
+        const grid = [0.1, 0.1];
         if (canvasLayer !== null) {
             if (!canvasLayer.getVisible()) {
                 canvasLayer.setVisible(true);
@@ -48,8 +48,6 @@ export default class TrackDensity extends React.Component<any, IState> {
                         size,
                         projection
                     ) => {
-                        console.log(extent);
-                        console.log(size);
                         const canvas = document.createElement('canvas');
                         canvas.width = size[0];
                         canvas.height = size[1];

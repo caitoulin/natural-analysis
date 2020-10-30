@@ -133,7 +133,7 @@ function calcuIndex(allTyphoons) {
         [98, 3],
         [178, 83],
     ];
-    const grid = [0.5, 0.5];
+    const grid = [0.1, 0.1];
     const eachRad = 111;
     const width = (extent[1][0] - extent[0][0]) / grid[0];
     const height = (extent[1][1] - extent[0][1]) / grid[1];

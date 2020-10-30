@@ -289,6 +289,17 @@ function getValueColor(value: number) {
         '#d73027',
         '#a50026',
     ];
+    if (value < 100) return colors[0];
+    if (value < 500) return colors[1];
+    if (value < 1500) return colors[2];
+    if (value < 2500) return colors[3];
+    if (value < 3500) return colors[4];
+    if (value < 4500) return colors[5];
+    if (value < 5500) return colors[6];
+    if (value < 6500) return colors[7];
+    if (value < 8500) return colors[8];
+    if (value < 10500) return colors[9];
+    return colors[10];
 }
 export function plotGrids(
     canvas: any,
@@ -298,7 +309,7 @@ export function plotGrids(
     xlim: number[],
     ylim: number[]
 ) {
-    const gridWidth = (renderExtent[1][0] - renderExtent[0][0]) / grid[0];
+    const gridWidth = grid[0];
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const range = [xlim[1] - xlim[0], ylim[1] - ylim[0]];
@@ -316,6 +327,7 @@ export function plotGrids(
             const y =
                 canvas.height *
                 (1 - (j * gridWidth + renderExtent[0][1] - ylim[0]) / range[1]);
+            ctx.fillStyle = getValueColor(grids[i][j]);
             ctx.fillRect(
                 Math.round(x - wx / 2),
                 Math.round(y - wy / 2),
