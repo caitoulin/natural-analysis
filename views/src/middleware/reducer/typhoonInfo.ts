@@ -23,7 +23,7 @@ export interface LANDTRACK {
     track: Array<TRACKCOOR>;
 }
 export interface CLUSTERSEG {
-    segment: Array<Array<Array<number>>>;
+    segment: Array<Array<number>>;
     data: Array<any>;
 }
 export interface INISTIAL {

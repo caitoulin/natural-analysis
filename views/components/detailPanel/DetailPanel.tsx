@@ -3,6 +3,7 @@ import ClusterPanel from './LandedClusterPanel';
 import OriginGrid from './OriginGrid';
 import InfluencedIndex from './InfluencedIndex';
 import TrackDensity from './TrackDensity';
+import TrackCluster from './TrackCluster';
 import classNames from 'classnames';
 import './detail.less';
 export default function DetailPanel({ index }: { index: string }) {
@@ -19,7 +20,7 @@ export default function DetailPanel({ index }: { index: string }) {
             case '11000':
                 return <TrackDensity />;
             case '11100':
-                return <div></div>;
+                return <TrackCluster />;
         }
     };
 

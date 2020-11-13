@@ -12,6 +12,7 @@
         "target": "ES6",
         "moduleResolution": "node",
         "jsx": "react",
+        "suppressImplicitAnyIndexErrors": true,
         "typeRoots": ["node_modules/@types", "@types", "node_modules/@turf"],
         "lib": ["DOM", "ES2015", "ScriptHost", "ES2019.Array", "ESNext"]
     },
@@ -20,6 +21,6 @@
         //排除文件
         "node_modules",
         "build",
-        "dist",
+        "dist"
     ]
 }
