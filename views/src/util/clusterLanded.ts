@@ -199,60 +199,58 @@ export function combineCluster(arrayToProcess: Array<TyphoonLandedOrigin>) {
     const remainPoint = arrayToProcess.filter((item, index) => {
         return !getDbscanResult.reduce((a, b) => a.concat(b)).includes(index);
     });
-    const getRepeatKemeansCluestr = kmeans(getLongRepeatCluster, 4);
+    const getRepeatKemeansCluestr = kmeans(getLongRepeatCluster, 3);
     const getRemainKemeansCluestr = kmeans(remainPoint, 4);
+    console.log(getRemainKemeansCluestr);
+    Array.prototype.push.apply(getShortResult, getRemainKemeansCluestr[0]);
+    getRepeatKemeansCluestr.push(getRemainKemeansCluestr[1]);
     getRepeatKemeansCluestr.push(getRemainKemeansCluestr[2]); // 2与3类符合规则点数大于12个
     getRepeatKemeansCluestr.push(getRemainKemeansCluestr[3]);
-    const getTwoCluster = kmeans(getRemainKemeansCluestr[0], 2);
-    Array.prototype.push.apply(getShortResult, getTwoCluster[0]);
     getRepeatKemeansCluestr.push(getShortResult);
-    getRepeatKemeansCluestr.push(getTwoCluster[1]);
     return getRepeatKemeansCluestr;
 }
 
 export function splitSegment() {
     const getSegment = [];
     getSegment[0] = [
-        [118.1, 24.05],
-        [119.93, 25.49],
-        [122.01, 28.94],
+        [117.6017, 23.6255],
+        [119.7092, 25.4584],
+        [122.66, 29.38],
     ];
     getSegment[1] = [
-        [114.22, 22.07],
-        [116.52, 22.9],
-        [118.1, 24.05],
+        [112.3063, 21.647],
+        [116.5621, 22.8146],
+        [117.6017, 23.6255],
     ];
     getSegment[2] = [
-        [110.6, 21.12],
-        [114.22, 22.07],
+        [108.6272, 18.4814],
+        [109.5779, 18.1611],
+        [110.5288, 18.7714],
+        [111.0426, 19.6488],
+        [110.4382, 20.8923],
+        [112.3063, 21.647],
     ];
     getSegment[3] = [
-        [108.41, 18.7],
-        [109.57, 18.11],
-        [111.12, 19.65],
-        [110.6, 21.12],
+        [119.5, 35.22],
+        [122.777, 37.2553],
+        [121.7214, 38.7844],
+        [124.1724, 39.7794],
     ];
     getSegment[4] = [
-        [120.64, 34.18],
-        [122.77, 37.32],
-        [121.66, 38.82],
-        [124.15, 39.77],
+        [108.0511, 21.5347],
+        [108.7406, 21.6103],
+        [109.922, 20.2229],
     ];
     getSegment[5] = [
-        [122.01, 28.94],
-        [122.6, 30.99],
-        [120.64, 34.18],
+        [122.66, 29.38],
+        [122.6581, 29.896],
+        [119.5, 35.22],
     ];
     getSegment[6] = [
         [120.04, 23.62],
         [119.91, 22.78],
         [120.75, 21.86],
         [122.08, 25.15],
-    ];
-    getSegment[7] = [
-        [108.09, 21.52],
-        [109.17, 21.37],
-        [109.93, 20.2],
     ];
     return getSegment;
 }

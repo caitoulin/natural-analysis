@@ -29,13 +29,12 @@ const colors = [
 ];
 const landedCenterPosition = [
     [120.85, 26.04],
-    [116.57, 22.74],
-    [112.46, 21.27],
-    [110.7, 18.63],
-    [123.32, 37.39],
-    [122.44, 32.08],
+    [114.7309, 22.059],
+    [111.1182, 19.9807],
+    [122.87, 37.39],
+    [109.1423, 21.288],
+    [121.82, 33.51],
     [121.79, 23.45],
-    [109.1, 21.2],
 ];
 const vectorSegmentSource = new VectorSource();
 const vectorKmeansSource = new VectorSource();
@@ -86,7 +85,7 @@ const vectorSegmntLayer = new VectorLayer({
     }),
     zIndex: 50,
 });
-const clusterKmenasCount = 7;
+const clusterKmenasCount = 6;
 function ClusterPanel({
     landedOrigin,
     landedCluster,
@@ -122,6 +121,7 @@ function ClusterPanel({
                                 }),
                             })
                         );
+                        getFeature.setId(getKey.toString());
                         return getFeature;
                     });
                 })
@@ -173,6 +173,12 @@ function ClusterPanel({
         }
     };
     const handleCombinationCluster = (): void => {
+        // window.LDmap.on('singleclick', function (e: any) {
+        //     if (window.LDmap.hasFeatureAtPixel(e.pixel)) {
+        //         const feature = window.LDmap.getFeaturesAtPixel(e.pixel);
+        //         console.log(feature);
+        //     }
+        // });
         if (vectorCombiSource.getFeatures().length !== 0) {
             if (vectorCombinLayer.getVisible()) {
                 vectorCombinLayer.setVisible(false);
@@ -197,8 +203,15 @@ function ClusterPanel({
                                     }),
                                     radius: 2,
                                 }),
+                                // text: new Text({
+                                //     text: index.toString(),
+                                //     offsetX: -3,
+                                //     offsetY: -3,
+                                //     font: '15px Microsoft YaHei',
+                                // }),
                             })
                         );
+                        getFeature.setId(getKey.toString());
                         return getFeature;
                     });
                 })
@@ -260,7 +273,7 @@ function ClusterPanel({
                                 offsetX: -3,
                                 offsetY: -3,
                                 font: '15px Microsoft YaHei',
-                                text: index.toString(),
+                                text: (index + 1).toString(),
                                 fill: new Fill({ color: '#000000' }),
                             }),
                         })

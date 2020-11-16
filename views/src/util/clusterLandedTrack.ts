@@ -21,9 +21,10 @@ export function getLandedTrackSegment(
         const verifyTracks = data.reduce((pre: any, cur: any) => {
             const getTfbh = Object.keys(cur)[0];
             const { getAllLandedPoints } = flattenLandedTracks[getTfbh];
-            if (isCross(segment, getAllLandedPoints)) {
+            /*             if (isCross(segment, getAllLandedPoints)) {
                 pre.push({ [getTfbh]: getAllLandedPoints });
-            }
+            } */
+            pre.push({ [getTfbh]: getAllLandedPoints });
             return pre;
         }, []);
         return { segment, data: verifyTracks };
@@ -43,7 +44,6 @@ function isCross(
     const line2 = turf.lineString(getAllCoors);
     if (turf.booleanDisjoint(line1, line2)) {
         return true;
-        debugger;
     } else {
         return false;
     }
