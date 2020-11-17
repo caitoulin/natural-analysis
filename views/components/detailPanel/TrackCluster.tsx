@@ -1,7 +1,10 @@
 import React from 'react';
 import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
 import { connect } from 'react-redux';
-import { getLandedTrackSegment } from '../../src/util/clusterLandedTrack';
+import {
+    getLandedTrackSegment,
+    trackSegmentCluster,
+} from '../../src/util/clusterLandedTrack';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import { Stroke, Style, Text } from 'ol/style';
@@ -34,6 +37,7 @@ class TrackCluster extends React.Component<IProps> {
             landedTracks
         );
         const getIndexTracks = landedTracksSegment[index]['data'];
+        const allSegments = trackSegmentCluster(getIndexTracks);
         if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
         const getIndexFeatures = getIndexTracks.map((item: any) => {
             const getCoors: any = Object.values(item)[0];
