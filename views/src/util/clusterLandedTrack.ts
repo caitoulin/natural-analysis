@@ -94,20 +94,19 @@ function compressLine({ getCoorTrack, start, end, maxDistance }: any) {
         if (maxDist > maxDistance) {
             result.push(currentIndex);
             const resultLeft = compressLine({
-                getCoorTrack: getCoorTrack.slice(start, currentIndex + 1),
-                result,
+                getCoorTrack,
                 start,
                 end: currentIndex,
                 maxDistance,
             });
             const resultRight = compressLine({
-                getCoorTrack: getCoorTrack.slice(currentIndex, end + 1),
-                result,
-                start,
-                end: currentIndex,
+                getCoorTrack,
+                start: currentIndex,
+                end,
                 maxDistance,
             });
-            result.concat(resultLeft, resultRight);
+            Array.prototype.push.apply(result, resultLeft);
+            Array.prototype.push.apply(result, resultRight);
         }
     }
     return result;
@@ -135,10 +134,10 @@ export function trackSegmentCluster(allLandedTracks: any) {
             const tfbh = Object.keys(item)[0];
             const eachTrack: number[][] = item[tfbh].map((item: any) => {
                 const { coordinate } = item;
-                return coordinate;
+                return [+coordinate[0].toFixed(2), +coordinate[1].toFixed(2)];
             });
             const eachTrackSegments: SEGMENT[] = [];
-            const compressIndex = trackSplitSegment(eachTrack, 0.3);
+            const compressIndex = trackSplitSegment(eachTrack, 0.5);
             for (let i = 0; i < compressIndex.length - 1; i++) {
                 eachTrackSegments.push({
                     tfbh,
@@ -153,4 +152,156 @@ export function trackSegmentCluster(allLandedTracks: any) {
             return eachTrackSegments;
         })
         .reduce((a: any, b: any) => a.concat(b));
+    return getSegments;
+}
+
+function retrieveNeighbors(
+    eps: number,
+    line: SEGMENT,
+    cluster: Array<SEGMENT>
+) {
+    const neighbors = [];
+    for (let i = 0; i < cluster.length; i++) {
+        const dist = similarDistance(line, cluster[i]);
+        if (dist < eps) {
+            neighbors.push(i);
+        }
+    }
+    return neighbors;
+}
+
+function lineDbscan(getSegments: Array<SEGMENT>, minLins: number, eps: number) {
+    let clusterLabel = 0;
+    const labels = new Array(getSegments.length).fill(0);
+    const clusters = [];
+    for (let i = 0; i < getSegments.length; i++) {
+        const neighbors = retrieveNeighbors(eps, getSegments[i], getSegments);
+        if (neighbors.length < minLins) {
+            if (labels[i] === 0) {
+                labels[i] = 'noise';
+            }
+        } else {
+            clusterLabel += 1;
+            const cluster = [];
+            for (let j1 = 0; j1 < neighbors.length; j1++) {
+                if (
+                    labels[neighbors[j1]] === 0 ||
+                    labels[neighbors[j1]] === 'noise'
+                ) {
+                    labels[neighbors[j1]] = clusterLabel;
+                    cluster.push(neighbors[j1]);
+                }
+            }
+            while (neighbors.length !== 0) {
+                const j2 = neighbors.pop();
+                const subNeighbors = retrieveNeighbors(
+                    eps,
+                    getSegments[j2],
+                    getSegments
+                );
+                if (subNeighbors.length >= minLins) {
+                    for (let k = 0; k < subNeighbors.length; k++) {
+                        // if no other labels
+                        if (
+                            labels[subNeighbors[k]] === 0 ||
+                            labels[subNeighbors[k]] === 'noise'
+                        ) {
+                            neighbors.push(subNeighbors[k]);
+                            labels[subNeighbors[k]] = clusterLabel;
+                            cluster.push(subNeighbors[k]);
+                        }
+                    }
+                }
+            }
+            if (cluster.length < minLins) {
+                for (let j3 = 0; j3 < getSegments.length; j3++) {
+                    if (labels[j3] === clusterLabel) {
+                        labels[j3] = 'noise';
+                    }
+                }
+            } else {
+                clusters.push(cluster);
+            }
+        }
+    }
+    return clusters;
+}
+
+function similarDistance(line1: SEGMENT, line2: SEGMENT) {
+    const segmentOne = [
+        line1['values'][0],
+        line1['values'][line1['values'].length - 1],
+    ];
+    const segmentTwo = [
+        line2['values'][0],
+        line2['values'][line2['values'].length - 1],
+    ];
+    return getTrackDistance(segmentOne, segmentTwo);
+}
+
+function getTrackDistance(segmentOne: number[][], segmentTwo: number[][]) {
+    const distOne = getTwoPointDistance(segmentOne[0], segmentOne[1]);
+    const distTwo = getTwoPointDistance(segmentTwo[0], segmentTwo[1]);
+    let getSimilarDistace: number;
+    if (distOne < distTwo) {
+        getSimilarDistace = getSimilarDist(segmentOne, segmentTwo);
+    } else {
+        getSimilarDistace = getSimilarDist(segmentTwo, segmentOne);
+    }
+    return getSimilarDistace;
+}
+
+/**
+ *  获取两条线段的夹角
+ * @param shortLine 较短的线段
+ * @param longLine 较长的线段
+ */
+function getAngel(shortLine: number[][], longLine: number[][]) {
+    const dx1 = shortLine[0][0] - shortLine[1][0];
+    const dy1 = shortLine[0][1] - shortLine[1][1];
+    const dx2 = longLine[0][0] - longLine[1][0];
+    const dy2 = longLine[0][1] - longLine[1][1];
+    const angel1 = Math.atan2(dy1, dx1);
+    const angel2 = Math.atan2(dy2, dx2);
+    if (angel1 * angel2 >= 0) {
+        return Math.abs(angel1 - angel2);
+    } else {
+        return Math.abs(angel2) + Math.abs(angel1);
+    }
+}
+/**
+ * 得到两条线段的相似距离
+ * @param shortLine 短线段
+ * @param longLine 长线段
+ */
+function getSimilarDist(shortLine: number[][], longLine: number[][]) {
+    const verDist1 = getDistToSegment(longLine[0], longLine[1], shortLine[0]);
+    const verDist2 = getDistToSegment(longLine[0], longLine[1], shortLine[1]);
+    const verticalDistace = +(
+        (Math.pow(verDist1, 2) + Math.pow(verDist2, 2)) /
+        (verDist1 + verDist2)
+    ).toFixed(2);
+    const horiDist1 = +Math.sqrt(
+        Math.pow(getTwoPointDistance(shortLine[0], longLine[0]), 2) -
+            Math.pow(verDist1, 2)
+    ).toFixed(2);
+    const horiDist2 = +Math.sqrt(
+        Math.pow(getTwoPointDistance(shortLine[1], longLine[0]), 2) -
+            Math.pow(verDist2, 2)
+    ).toFixed(2);
+    const horiDist3 = +Math.sqrt(
+        Math.pow(getTwoPointDistance(shortLine[0], longLine[1]), 2) -
+            Math.pow(verDist1, 2)
+    ).toFixed(2);
+    const horiDist4 = +Math.sqrt(
+        Math.pow(getTwoPointDistance(shortLine[1], longLine[1]), 2) -
+            Math.pow(verDist2, 2)
+    ).toFixed(2);
+    const getHorizontal = Math.min(horiDist1, horiDist2, horiDist3, horiDist4);
+    let angelDistance = getTwoPointDistance(shortLine[0], shortLine[1]);
+    const angel = getAngel(shortLine, longLine);
+    if (angel >= 0 && angel < Math.PI / 2) {
+        angelDistance = angelDistance * Math.sin(angel);
+    }
+    return verticalDistace + getHorizontal + angelDistance;
 }

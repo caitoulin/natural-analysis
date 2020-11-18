@@ -1,6 +1,7 @@
 import React from 'react';
 import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
 import { connect } from 'react-redux';
+import classNames from 'classnames';
 import {
     getLandedTrackSegment,
     trackSegmentCluster,
@@ -15,6 +16,9 @@ interface IProps {
     landedCluster: Array<any>;
     landedTracks: Array<LANDTRACK>;
 }
+interface IState {
+    index: number;
+}
 const vectorTracks = new VectorSource();
 const vectorTracksLayer = new VectorLayer({
     source: vectorTracks,
@@ -25,19 +29,25 @@ const vectorTracksLayer = new VectorLayer({
         }),
     }),
 });
-class TrackCluster extends React.Component<IProps> {
+class TrackCluster extends React.Component<IProps, IState> {
     constructor(props: IProps) {
         super(props);
-        window.LDmap.addLayer(vectorTracksLayer);
+        this.state = { index: 12 };
     }
-    handleClusterTracks = (index: number) => {
+    componentDidMount() {
+        const layers = window.LDmap.getLayers().getArray();
+        if (!layers.includes(vectorTracksLayer)) {
+            window.LDmap.addLayer(vectorTracksLayer);
+        }
+    }
+    handleShowTracks = () => {
+        const { index } = this.state;
         const { landedCluster, landedTracks } = this.props;
         const landedTracksSegment = getLandedTrackSegment(
             landedCluster,
             landedTracks
         );
         const getIndexTracks = landedTracksSegment[index]['data'];
-        const allSegments = trackSegmentCluster(getIndexTracks);
         if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
         const getIndexFeatures = getIndexTracks.map((item: any) => {
             const getCoors: any = Object.values(item)[0];
@@ -63,17 +73,42 @@ class TrackCluster extends React.Component<IProps> {
         });
         vectorTracks.addFeatures(getIndexFeatures);
     };
+    handleShowClusterTracks = () => {
+        const { index } = this.state;
+        const { landedCluster, landedTracks } = this.props;
+        const landedTracksSegment = getLandedTrackSegment(
+            landedCluster,
+            landedTracks
+        );
+        const getIndexTracks = landedTracksSegment[index]['data'];
+        const allSegments = trackSegmentCluster(getIndexTracks);
+    };
+    showDialog = (index: number) => {
+        this.setState({ index });
+    };
     render() {
         const arrButton = [0, 1, 2, 3, 4, 5, 6];
+        const { index } = this.state;
         return (
             <div className="cluster-groups">
                 {arrButton.map((item) => {
                     return (
-                        <button
-                            key={item}
-                            onClick={() =>
-                                this.handleClusterTracks(item)
-                            }>{`分段${item + 1}`}</button>
+                        <div key={item + '3'}>
+                            <button
+                                key={item}
+                                onClick={() => this.showDialog(item)}>{`分段${
+                                item + 1
+                            }`}</button>
+                            <div
+                                className={classNames('show-down', {
+                                    'close-down': index !== item,
+                                })}>
+                                <span onClick={this.handleShowTracks}>
+                                    原始轨迹
+                                </span>
+                                <span>聚类轨迹</span>
+                            </div>
+                        </div>
                     );
                 })}
             </div>

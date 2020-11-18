@@ -18,6 +18,11 @@ export default class Menu extends Component<IProps, any> {
                 { trackDensity: ['轨迹可视化'] },
                 { trackDevelopment: ['轨迹聚类'] },
             ],
+            thirdChapter: [
+                {
+                    RiskAssessment: ['致灾因子', '脆弱性', '风险'],
+                },
+            ],
         },
         isSelectedFirst: [],
         isSelectedSecond: [],
