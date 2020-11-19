@@ -146,7 +146,6 @@ function ClusterPanel({
                     return each.length > 10;
                 })
                 .map((item, index) => {
-                    console.log(item);
                     return item.map((each) => {
                         const getKey = Object.keys(landedOrigin[each])[0];
                         const eachFeature = new Feature({

@@ -163,18 +163,23 @@ function retrieveNeighbors(
     const neighbors = [];
     for (let i = 0; i < cluster.length; i++) {
         const dist = similarDistance(line, cluster[i]);
-        if (dist < eps) {
+        if (dist <= eps) {
             neighbors.push(i);
         }
     }
     return neighbors;
 }
 
-function lineDbscan(getSegments: Array<SEGMENT>, minLins: number, eps: number) {
+export function lineDbscan(
+    getSegments: Array<SEGMENT>,
+    minLins: number,
+    eps: number
+) {
     let clusterLabel = 0;
     const labels = new Array(getSegments.length).fill(0);
     const clusters = [];
     for (let i = 0; i < getSegments.length; i++) {
+        if (labels[i] !== 0) continue;
         const neighbors = retrieveNeighbors(eps, getSegments[i], getSegments);
         if (neighbors.length < minLins) {
             if (labels[i] === 0) {
@@ -303,5 +308,5 @@ function getSimilarDist(shortLine: number[][], longLine: number[][]) {
     if (angel >= 0 && angel < Math.PI / 2) {
         angelDistance = angelDistance * Math.sin(angel);
     }
-    return verticalDistace + getHorizontal + angelDistance;
+    return +(verticalDistace + getHorizontal + angelDistance).toFixed(2);
 }

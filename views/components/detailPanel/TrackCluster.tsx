@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import {
     getLandedTrackSegment,
     trackSegmentCluster,
+    lineDbscan,
 } from '../../src/util/clusterLandedTrack';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
@@ -19,12 +20,28 @@ interface IProps {
 interface IState {
     index: number;
 }
+const colors = [
+    'rgb(255,182,193)',
+    'rgb(220,20,60)',
+    'rgb(255,20,147)',
+    'rgb(139,0,139)',
+    'rgb(123,104,238)',
+    'rgb(0,0,255)',
+    'rgb(65,105,225)',
+    'rgb(0,191,255)',
+    'rgb(47,79,79)',
+    'rgb(0,255,0)',
+    'rgb(255,215,0)',
+    'rgb(160,82,45)',
+    'rgb(255,0,0)',
+    'rgb(105,105,105)',
+];
 const vectorTracks = new VectorSource();
 const vectorTracksLayer = new VectorLayer({
     source: vectorTracks,
     style: new Style({
         stroke: new Stroke({
-            width: 2,
+            width: 1,
             color: '#319FD3',
         }),
     }),
@@ -82,6 +99,30 @@ class TrackCluster extends React.Component<IProps, IState> {
         );
         const getIndexTracks = landedTracksSegment[index]['data'];
         const allSegments = trackSegmentCluster(getIndexTracks);
+        const getClusterLines = lineDbscan(allSegments, 2, 0.5);
+        if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
+        const getAllLineFeatures = getClusterLines
+            .map((item, index) => {
+                return item.map((each) => {
+                    const linePoints = allSegments[each]['values'];
+                    const eachFeature = new Feature({
+                        geometry: new LineString(linePoints),
+                    });
+                    eachFeature.setStyle(
+                        new Style({
+                            stroke: new Stroke({
+                                width: 2,
+                                color: colors[index],
+                            }),
+                        })
+                    );
+                    return eachFeature;
+                });
+            })
+            .reduce((a, b) => {
+                return a.concat(b);
+            }, []);
+        vectorTracks.addFeatures(getAllLineFeatures);
     };
     showDialog = (index: number) => {
         this.setState({ index });
@@ -106,7 +147,9 @@ class TrackCluster extends React.Component<IProps, IState> {
                                 <span onClick={this.handleShowTracks}>
                                     原始轨迹
                                 </span>
-                                <span>聚类轨迹</span>
+                                <span onClick={this.handleShowClusterTracks}>
+                                    聚类轨迹
+                                </span>
                             </div>
                         </div>
                     );

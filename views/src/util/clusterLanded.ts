@@ -132,7 +132,6 @@ export function dbscan(
         } else {
             clusterLabel += 1; // construct a new cluster
             const cluster = []; // construct cluster
-
             // mark label for all unmarked neighbors
             for (let j1 = 0; j1 < neighbors.length; j1++) {
                 // if no other labels
