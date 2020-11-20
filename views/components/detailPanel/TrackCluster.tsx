@@ -46,6 +46,16 @@ const vectorTracksLayer = new VectorLayer({
         }),
     }),
 });
+const clusterTracks = new VectorSource();
+const clusterTracksLayer = new VectorLayer({
+    source: clusterTracks,
+    style: new Style({
+        stroke: new Stroke({
+            width: 1,
+            color: '#319FD3',
+        }),
+    }),
+});
 class TrackCluster extends React.Component<IProps, IState> {
     constructor(props: IProps) {
         super(props);
@@ -56,76 +66,101 @@ class TrackCluster extends React.Component<IProps, IState> {
         if (!layers.includes(vectorTracksLayer)) {
             window.LDmap.addLayer(vectorTracksLayer);
         }
+        if (!layers.includes(clusterTracksLayer)) {
+            window.LDmap.addLayer(clusterTracksLayer);
+        }
     }
     handleShowTracks = () => {
-        const { index } = this.state;
-        const { landedCluster, landedTracks } = this.props;
-        const landedTracksSegment = getLandedTrackSegment(
-            landedCluster,
-            landedTracks
-        );
-        const getIndexTracks = landedTracksSegment[index]['data'];
-        if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
-        const getIndexFeatures = getIndexTracks.map((item: any) => {
-            const getCoors: any = Object.values(item)[0];
-            const getAllCoors = getCoors.map((each: any) => {
-                const { coordinate } = each;
-                return [+coordinate[0], +coordinate[1]];
-            });
-            const eachLineFeature = new Feature({
-                geometry: new LineString(getAllCoors),
-            });
-            eachLineFeature.setStyle(
-                new Style({
-                    text: new Text({
-                        text: Object.keys(item)[0],
-                    }),
-                    stroke: new Stroke({
-                        width: 1,
-                        color: 'rgb(38,188,213)',
-                    }),
-                })
+        if (vectorTracks.getFeatures().length !== 0) {
+            if (vectorTracksLayer.getVisible()) {
+                vectorTracksLayer.setVisible(false);
+            } else {
+                vectorTracksLayer.setVisible(true);
+            }
+        } else {
+            if (!vectorTracksLayer.getVisible()) {
+                vectorTracksLayer.setVisible(true);
+            }
+            const { index } = this.state;
+            const { landedCluster, landedTracks } = this.props;
+            const landedTracksSegment = getLandedTrackSegment(
+                landedCluster,
+                landedTracks
             );
-            return eachLineFeature;
-        });
-        vectorTracks.addFeatures(getIndexFeatures);
+            const getIndexTracks = landedTracksSegment[index]['data'];
+            const getIndexFeatures = getIndexTracks.map((item: any) => {
+                const getCoors: any = Object.values(item)[0];
+                const getAllCoors = getCoors.map((each: any) => {
+                    const { coordinate } = each;
+                    return [+coordinate[0], +coordinate[1]];
+                });
+                const eachLineFeature = new Feature({
+                    geometry: new LineString(getAllCoors),
+                });
+                eachLineFeature.setStyle(
+                    new Style({
+                        text: new Text({
+                            text: Object.keys(item)[0],
+                        }),
+                        stroke: new Stroke({
+                            width: 1,
+                            color: 'rgb(38,188,213)',
+                        }),
+                    })
+                );
+                return eachLineFeature;
+            });
+            vectorTracks.addFeatures(getIndexFeatures);
+        }
     };
     handleShowClusterTracks = () => {
-        const { index } = this.state;
-        const { landedCluster, landedTracks } = this.props;
-        const landedTracksSegment = getLandedTrackSegment(
-            landedCluster,
-            landedTracks
-        );
-        const getIndexTracks = landedTracksSegment[index]['data'];
-        const allSegments = trackSegmentCluster(getIndexTracks);
-        const getClusterLines = lineDbscan(allSegments, 2, 0.5);
-        if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
-        const getAllLineFeatures = getClusterLines
-            .map((item, index) => {
-                return item.map((each) => {
-                    const linePoints = allSegments[each]['values'];
-                    const eachFeature = new Feature({
-                        geometry: new LineString(linePoints),
+        if (clusterTracks.getFeatures().length !== 0) {
+            if (clusterTracksLayer.getVisible()) {
+                clusterTracksLayer.setVisible(false);
+            } else {
+                clusterTracksLayer.setVisible(true);
+            }
+        } else {
+            if (!clusterTracksLayer.getVisible()) {
+                clusterTracksLayer.setVisible(true);
+            }
+            const { index } = this.state;
+            const { landedCluster, landedTracks } = this.props;
+            const landedTracksSegment = getLandedTrackSegment(
+                landedCluster,
+                landedTracks
+            );
+            const getIndexTracks = landedTracksSegment[index]['data'];
+            const allSegments = trackSegmentCluster(getIndexTracks);
+            const getClusterLines = lineDbscan(allSegments, 2, 1);
+            const getAllLineFeatures = getClusterLines
+                .map((item, index) => {
+                    return item.map((each) => {
+                        const linePoints = allSegments[each]['values'];
+                        const eachFeature = new Feature({
+                            geometry: new LineString(linePoints),
+                        });
+                        eachFeature.setStyle(
+                            new Style({
+                                stroke: new Stroke({
+                                    width: 1,
+                                    color: colors[index],
+                                }),
+                            })
+                        );
+                        return eachFeature;
                     });
-                    eachFeature.setStyle(
-                        new Style({
-                            stroke: new Stroke({
-                                width: 2,
-                                color: colors[index],
-                            }),
-                        })
-                    );
-                    return eachFeature;
-                });
-            })
-            .reduce((a, b) => {
-                return a.concat(b);
-            }, []);
-        vectorTracks.addFeatures(getAllLineFeatures);
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+            clusterTracks.addFeatures(getAllLineFeatures);
+        }
     };
     showDialog = (index: number) => {
         this.setState({ index });
+        if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
+        if (clusterTracks.getFeatures().length !== 0) clusterTracks.clear();
     };
     render() {
         const arrButton = [0, 1, 2, 3, 4, 5, 6];

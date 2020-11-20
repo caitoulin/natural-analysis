@@ -57,7 +57,7 @@ function getTwoPointDistance(a: number[], b: number[]) {
     const distance = Math.sqrt(
         Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2)
     );
-    return +distance.toFixed(2);
+    return distance;
 }
 
 function getDistToSegment(start: number[], end: number[], center: number[]) {
@@ -66,7 +66,7 @@ function getDistToSegment(start: number[], end: number[], center: number[]) {
     const c = Math.abs(getTwoPointDistance(center, end));
     const p = (a + b + c) / 2.0;
     const s = Math.sqrt(Math.abs(p * (p - a) * (p - b) * (p - c)));
-    return +((s * 2.0) / a).toFixed(2);
+    return (s * 2.0) / a;
 }
 
 /**
@@ -162,7 +162,12 @@ function retrieveNeighbors(
 ) {
     const neighbors = [];
     for (let i = 0; i < cluster.length; i++) {
-        const dist = similarDistance(line, cluster[i]);
+        if (line === cluster[i]) {
+            neighbors.push(i);
+            continue;
+        }
+        const dist = similarDistanceByStrc(line, cluster[i]);
+        // const dist = similarDistanceByDistance(line, cluster[i]);
         if (dist <= eps) {
             neighbors.push(i);
         }
@@ -206,7 +211,6 @@ export function lineDbscan(
                 );
                 if (subNeighbors.length >= minLins) {
                     for (let k = 0; k < subNeighbors.length; k++) {
-                        // if no other labels
                         if (
                             labels[subNeighbors[k]] === 0 ||
                             labels[subNeighbors[k]] === 'noise'
@@ -231,8 +235,12 @@ export function lineDbscan(
     }
     return clusters;
 }
-
-function similarDistance(line1: SEGMENT, line2: SEGMENT) {
+/**
+ * 返回结构相似性
+ * @param line1
+ * @param line2
+ */
+function similarDistanceByStrc(line1: SEGMENT, line2: SEGMENT) {
     const segmentOne = [
         line1['values'][0],
         line1['values'][line1['values'].length - 1],
@@ -242,6 +250,25 @@ function similarDistance(line1: SEGMENT, line2: SEGMENT) {
         line2['values'][line2['values'].length - 1],
     ];
     return getTrackDistance(segmentOne, segmentTwo);
+}
+
+/**
+ * 得到欧式距离上的相似性
+ * @param line1
+ * @param line2
+ */
+function similarDistanceByDistance(line1: SEGMENT, line2: SEGMENT) {
+    const segmentOne = [
+        line1['values'][0],
+        line1['values'][line1['values'].length - 1],
+    ];
+    const segmentTwo = [
+        line2['values'][0],
+        line2['values'][line2['values'].length - 1],
+    ];
+    const distA = getTwoPointDistance(segmentOne[0], segmentTwo[0]);
+    const distB = getTwoPointDistance(segmentOne[1], segmentTwo[1]);
+    return +Math.sqrt(Math.pow(distA, 2) + Math.pow(distB, 2)).toFixed(2);
 }
 
 function getTrackDistance(segmentOne: number[][], segmentTwo: number[][]) {
@@ -282,26 +309,24 @@ function getAngel(shortLine: number[][], longLine: number[][]) {
 function getSimilarDist(shortLine: number[][], longLine: number[][]) {
     const verDist1 = getDistToSegment(longLine[0], longLine[1], shortLine[0]);
     const verDist2 = getDistToSegment(longLine[0], longLine[1], shortLine[1]);
-    const verticalDistace = +(
-        (Math.pow(verDist1, 2) + Math.pow(verDist2, 2)) /
-        (verDist1 + verDist2)
-    ).toFixed(2);
-    const horiDist1 = +Math.sqrt(
+    const verticalDistace =
+        (Math.pow(verDist1, 2) + Math.pow(verDist2, 2)) / (verDist1 + verDist2);
+    const horiDist1 = Math.sqrt(
         Math.pow(getTwoPointDistance(shortLine[0], longLine[0]), 2) -
             Math.pow(verDist1, 2)
-    ).toFixed(2);
-    const horiDist2 = +Math.sqrt(
+    );
+    const horiDist2 = Math.sqrt(
         Math.pow(getTwoPointDistance(shortLine[1], longLine[0]), 2) -
             Math.pow(verDist2, 2)
-    ).toFixed(2);
-    const horiDist3 = +Math.sqrt(
+    );
+    const horiDist3 = Math.sqrt(
         Math.pow(getTwoPointDistance(shortLine[0], longLine[1]), 2) -
             Math.pow(verDist1, 2)
-    ).toFixed(2);
-    const horiDist4 = +Math.sqrt(
+    );
+    const horiDist4 = Math.sqrt(
         Math.pow(getTwoPointDistance(shortLine[1], longLine[1]), 2) -
             Math.pow(verDist2, 2)
-    ).toFixed(2);
+    );
     const getHorizontal = Math.min(horiDist1, horiDist2, horiDist3, horiDist4);
     let angelDistance = getTwoPointDistance(shortLine[0], shortLine[1]);
     const angel = getAngel(shortLine, longLine);
@@ -309,4 +334,37 @@ function getSimilarDist(shortLine: number[][], longLine: number[][]) {
         angelDistance = angelDistance * Math.sin(angel);
     }
     return +(verticalDistace + getHorizontal + angelDistance).toFixed(2);
+}
+/**
+ * 计算两条轨迹的相似性
+ * @param line1
+ * @param line2
+ */
+function getSimilarByLCSS(line1: number[][], line2: number[][]) {
+    if (line1.length === 0 || line2.length === 0) return 0;
+    const m = line1.length;
+    const n = line2.length;
+    const dp = new Array(m);
+    for (let i = 0; i < line1.length; i++) {
+        const inital = [];
+        for (let j = 0; j < line2.length; j++) {
+            inital[j] = 0;
+        }
+        dp[i].push(inital);
+    }
+    for (let i = 1; i < line1.length; i++) {
+        for (let j = 1; j < line2.length; j++) {
+            if (
+                getTrackDistance(
+                    [line1[i - 1], line1[i]],
+                    [line2[j - 1], line2[j]]
+                ) < 5
+            ) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    return +(1 - dp[m - 1][n - 1] / Math.min(m - 1, n - 1)).toFixed(3);
 }
