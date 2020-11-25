@@ -200,7 +200,6 @@ export function combineCluster(arrayToProcess: Array<TyphoonLandedOrigin>) {
     });
     const getRepeatKemeansCluestr = kmeans(getLongRepeatCluster, 3);
     const getRemainKemeansCluestr = kmeans(remainPoint, 4);
-    console.log(getRemainKemeansCluestr);
     Array.prototype.push.apply(getShortResult, getRemainKemeansCluestr[0]);
     getRepeatKemeansCluestr.push(getRemainKemeansCluestr[1]);
     getRepeatKemeansCluestr.push(getRemainKemeansCluestr[2]); // 2与3类符合规则点数大于12个

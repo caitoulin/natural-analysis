@@ -5,8 +5,13 @@ import classNames from 'classnames';
 import {
     getLandedTrackSegment,
     trackSegmentCluster,
-    lineDbscan,
+    lineSegDbscan,
+    allLinesDbscan,
 } from '../../src/util/clusterLandedTrack';
+import {
+    getAllRerresentTrac,
+    clusterTracksRepre,
+} from '../../src/util/representTrac';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import { Stroke, Style, Text } from 'ol/style';
@@ -21,6 +26,7 @@ interface IState {
     index: number;
 }
 const colors = [
+    'rgb(47,79,79)',
     'rgb(255,182,193)',
     'rgb(220,20,60)',
     'rgb(255,20,147)',
@@ -29,7 +35,6 @@ const colors = [
     'rgb(0,0,255)',
     'rgb(65,105,225)',
     'rgb(0,191,255)',
-    'rgb(47,79,79)',
     'rgb(0,255,0)',
     'rgb(255,215,0)',
     'rgb(160,82,45)',
@@ -56,6 +61,16 @@ const clusterTracksLayer = new VectorLayer({
         }),
     }),
 });
+const clusterLine = new VectorSource();
+const clusterLineLayer = new VectorLayer({
+    source: clusterLine,
+    style: new Style({
+        stroke: new Stroke({
+            width: 1,
+            color: '#319FD3',
+        }),
+    }),
+});
 class TrackCluster extends React.Component<IProps, IState> {
     constructor(props: IProps) {
         super(props);
@@ -68,6 +83,9 @@ class TrackCluster extends React.Component<IProps, IState> {
         }
         if (!layers.includes(clusterTracksLayer)) {
             window.LDmap.addLayer(clusterTracksLayer);
+        }
+        if (!layers.includes(clusterLineLayer)) {
+            window.LDmap.addLayer(clusterLineLayer);
         }
     }
     handleShowTracks = () => {
@@ -113,7 +131,7 @@ class TrackCluster extends React.Component<IProps, IState> {
             vectorTracks.addFeatures(getIndexFeatures);
         }
     };
-    handleShowClusterTracks = () => {
+    handleShowClusterSegTracks = () => {
         if (clusterTracks.getFeatures().length !== 0) {
             if (clusterTracksLayer.getVisible()) {
                 clusterTracksLayer.setVisible(false);
@@ -132,7 +150,7 @@ class TrackCluster extends React.Component<IProps, IState> {
             );
             const getIndexTracks = landedTracksSegment[index]['data'];
             const allSegments = trackSegmentCluster(getIndexTracks);
-            const getClusterLines = lineDbscan(allSegments, 2, 1);
+            const getClusterLines = lineSegDbscan(allSegments, 5, 2);
             const getAllLineFeatures = getClusterLines
                 .map((item, index) => {
                     return item.map((each) => {
@@ -154,13 +172,103 @@ class TrackCluster extends React.Component<IProps, IState> {
                 .reduce((a, b) => {
                     return a.concat(b);
                 }, []);
-            clusterTracks.addFeatures(getAllLineFeatures);
+            const getAllRreTrackFeatures = getAllRerresentTrac(
+                getClusterLines,
+                allSegments
+            ).map((item, index) => {
+                const eachFeature = new Feature({
+                    geometry: new LineString(item),
+                });
+                eachFeature.setStyle(
+                    new Style({
+                        stroke: new Stroke({
+                            width: 5,
+                            color: colors[index],
+                        }),
+                    })
+                );
+                return eachFeature;
+            });
+            clusterTracks.addFeatures([
+                ...getAllLineFeatures,
+                ...getAllRreTrackFeatures,
+            ]);
+        }
+    };
+    handleShowClusterLine = () => {
+        if (clusterLine.getFeatures().length !== 0) {
+            if (clusterLineLayer.getVisible()) {
+                clusterLineLayer.setVisible(false);
+            } else {
+                clusterLineLayer.setVisible(true);
+            }
+        } else {
+            if (!clusterLineLayer.getVisible()) {
+                clusterLineLayer.setVisible(true);
+            }
+            const { index } = this.state;
+            const { landedCluster, landedTracks } = this.props;
+            const landedTracksSegment = getLandedTrackSegment(
+                landedCluster,
+                landedTracks
+            );
+            const getIndexTracks = landedTracksSegment[index]['data'];
+            const getLinesCluster = allLinesDbscan(getIndexTracks, 5, 0.25);
+            const allFeatures = getLinesCluster
+                .map((item, index) => {
+                    return item.map((each) => {
+                        const eachLine: any = Object.values(
+                            getIndexTracks[each]
+                        )[0];
+                        const getAllCoors = eachLine.map((each: any) => {
+                            const { coordinate } = each;
+                            return coordinate;
+                        });
+                        const eachLineFeature = new Feature({
+                            geometry: new LineString(getAllCoors),
+                        });
+                        eachLineFeature.setStyle(
+                            new Style({
+                                stroke: new Stroke({
+                                    width: 1,
+                                    color: colors[index],
+                                }),
+                            })
+                        );
+                        return eachLineFeature;
+                    });
+                })
+                .reduce((a, b) => {
+                    return a.concat(b);
+                }, []);
+            const getAllRreTrackFeatures = clusterTracksRepre(
+                getLinesCluster,
+                getIndexTracks
+            ).map((item, index) => {
+                const eachFeature = new Feature({
+                    geometry: new LineString(item),
+                });
+                eachFeature.setStyle(
+                    new Style({
+                        stroke: new Stroke({
+                            width: 5,
+                            color: colors[index],
+                        }),
+                    })
+                );
+                return eachFeature;
+            });
+            clusterLine.addFeatures([
+                ...allFeatures,
+                ...getAllRreTrackFeatures,
+            ]);
         }
     };
     showDialog = (index: number) => {
         this.setState({ index });
         if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
         if (clusterTracks.getFeatures().length !== 0) clusterTracks.clear();
+        if (clusterLine.getFeatures().length !== 0) clusterLine.clear();
     };
     render() {
         const arrButton = [0, 1, 2, 3, 4, 5, 6];
@@ -182,8 +290,11 @@ class TrackCluster extends React.Component<IProps, IState> {
                                 <span onClick={this.handleShowTracks}>
                                     原始轨迹
                                 </span>
-                                <span onClick={this.handleShowClusterTracks}>
-                                    聚类轨迹
+                                <span onClick={this.handleShowClusterSegTracks}>
+                                    分段聚类
+                                </span>
+                                <span onClick={this.handleShowClusterLine}>
+                                    整条聚类
                                 </span>
                             </div>
                         </div>

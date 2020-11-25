@@ -88,7 +88,7 @@ module.exports = {
     },
     424: { location: '台湾省新北市贡寮区', position: [121.9127, 25.041] },
     427: { location: '台湾省屏东县枋寮乡', position: [120.6, 22.5] },
-    505: { location: '台湾省宜兰县苏澳镇', position: [121.8565, 24.5441] },
+    505: { location: '台湾省宜兰县苏澳镇', position: [119.62, 26.07] },
     508: { location: '海南省琼海市博鳌镇', position: [110.5823, 19.1617] },
     509: {
         location: '浙江省台州市玉环县干江镇',
@@ -529,7 +529,7 @@ module.exports = {
     6006: { location: '香港特别行政区', position: [114.1746, 22.2907] },
     6010: { location: '台湾省宜兰', position: [119.843, 26.528] },
     6011: { location: '泉州', position: [119.2, 24.9] },
-    6014: { location: '台湾宜兰', position: [121.9637, 24.084] },
+    6014: { location: '台湾宜兰', position: [116.132, 22.824] },
     6024: { location: '海南文昌', position: [110.7936, 19.545] },
     6104: { location: '香港特别行政区', position: [113.949, 22.237] },
     6105: { location: '台湾台东县', position: [121, 27.9] },

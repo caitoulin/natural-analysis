@@ -97,7 +97,6 @@ export default class Menu extends Component<IProps, any> {
     };
     handleAnalysis = (index: string): void => {
         this.props.handleControlPanel(index);
-        console.log(index);
     };
     selectedFirst = (index: string): void => {
         const { isSelectedFirst } = this.state;
