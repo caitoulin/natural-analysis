@@ -93,7 +93,7 @@ function ClusterPanel({
 }: {
     landedOrigin: Array<TyphoonLandedOrigin>;
     landedCluster: Array<any>;
-    dispatch: Dispatch;
+    dispatch?: Dispatch;
 }) {
     const handleKmeansCluster = (): void => {
         if (vectorKmeansSource.getFeatures().length !== 0) {

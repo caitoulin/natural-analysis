@@ -23,7 +23,6 @@ export default function trackSmooth(tra: number[][]) {
         const getSmoothPoints = linearSmooth3(pointY).map((item, index) => {
             return [smoothPointX[index], item];
         });
-        debugger;
         return getSmoothPoints;
     }
 }

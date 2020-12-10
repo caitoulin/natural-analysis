@@ -4,6 +4,7 @@ import {
     LANDEDCLUSTER,
     ORIGINCLUSTER,
     LANDEDTRACK,
+    TRENDINFO,
 } from './types';
 import { EachTyphoon } from '../../util/handleIndexDB';
 import { getRankWindCircle } from '../../util/analysisProcess';
@@ -46,4 +47,8 @@ export const combineLandedCluster = (clusterResult: any) => {
 
 export const originCluster = (result: any) => {
     return { type: ORIGINCLUSTER, data: result };
+};
+
+export const getTrenInfo = (result: any) => {
+    return { type: TRENDINFO, data: result };
 };

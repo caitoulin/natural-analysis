@@ -3,12 +3,13 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "debug": "node ./bin/server.js",
-        "start": " node config/server.js ",
+        "debug": "node --max-old-space-size=8192 ./bin/server.js",
+        "start": " node --max-old-space-size=8192 config/server.js ",
         "build": "webpack --config config/webpack.prod.config.js",
         "dll": "webpack --config config/webpack.dll.config.js",
         "all": "npm-run-all --parallel debug start",
-        "eslint": "eslint --ext .tsx,.ts --fix ./views"
+        "eslint": "eslint --ext .tsx,.ts --fix ./views",
+        "fix-memory-limit": "cross-env LIMIT=8192 increase-memory-limit"
     },
     "husky": {
         "hooks": {
@@ -28,11 +29,15 @@
         "@turf/turf": "^5.1.6",
         "@types/ol": "^6.4.0",
         "axios": "^0.20.0",
+        "body-parser": "^1.19.0",
         "cookie-parser": "~1.4.4",
+        "cross-env": "^7.0.2",
         "debug": "~2.6.9",
         "ejs": "^3.1.3",
         "frechet": "^1.0.1",
+        "gdal": "^0.10.1",
         "http-errors": "~1.6.3",
+        "increase-memory-limit": "^1.0.7",
         "jade": "~1.11.0",
         "morgan": "~1.9.1",
         "ol": "^6.4.3"

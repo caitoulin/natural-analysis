@@ -5,5 +5,11 @@ router.get('/typhoonList', typhoonMiddles.getTyListData);
 router.get('/typhoonLandedOrigin', typhoonMiddles.getTyLandedOrigin);
 router.get('/influenceIndex', typhoonMiddles.getInfIndex);
 router.get('/grid', typhoonMiddles.getDensityGrids);
-
+router.get('/popIndex', typhoonMiddles.getPopIndex);
+router.get('/gdpIndex', typhoonMiddles.getGdpIndex);
+router.get('/landIndex', typhoonMiddles.getLandIndex);
+router.get('/poiIndex', typhoonMiddles.getPoiIndex);
+router.get('/transIndex', typhoonMiddles.getTransIndex);
+// router.get('/riskIndex', typhoonMiddles.getLandIndex);
+// router.get('/vlunIndex', typhoonMiddles.getLandIndex);
 module.exports = router;

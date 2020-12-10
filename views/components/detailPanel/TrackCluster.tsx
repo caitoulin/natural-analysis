@@ -2,6 +2,7 @@ import React from 'react';
 import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
+import TrendPanel from '../dialog/trendPanel';
 import {
     getLandedTrackSegment,
     trackSegmentCluster,
@@ -24,6 +25,7 @@ interface IProps {
 }
 interface IState {
     index: number;
+    isShow: boolean;
 }
 const colors = [
     'rgb(47,79,79)',
@@ -74,7 +76,7 @@ const clusterLineLayer = new VectorLayer({
 class TrackCluster extends React.Component<IProps, IState> {
     constructor(props: IProps) {
         super(props);
-        this.state = { index: 12 };
+        this.state = { index: 12, isShow: false };
     }
     componentDidMount() {
         const layers = window.LDmap.getLayers().getArray();
@@ -196,6 +198,12 @@ class TrackCluster extends React.Component<IProps, IState> {
         }
     };
     handleShowClusterLine = () => {
+        const { index } = this.state;
+        if ([0, 1, 2].includes(index)) {
+            const { isShow } = this.state;
+            this.setState({ isShow: !isShow });
+            return;
+        }
         if (clusterLine.getFeatures().length !== 0) {
             if (clusterLineLayer.getVisible()) {
                 clusterLineLayer.setVisible(false);
@@ -205,8 +213,8 @@ class TrackCluster extends React.Component<IProps, IState> {
         } else {
             if (!clusterLineLayer.getVisible()) {
                 clusterLineLayer.setVisible(true);
+                return;
             }
-            const { index } = this.state;
             const { landedCluster, landedTracks } = this.props;
             const landedTracksSegment = getLandedTrackSegment(
                 landedCluster,
@@ -241,15 +249,20 @@ class TrackCluster extends React.Component<IProps, IState> {
                 .reduce((a, b) => {
                     return a.concat(b);
                 }, []);
-            const getAllRreTrackFeatures = clusterTracksRepre(
+            const allRerTracks = clusterTracksRepre(
                 getLinesCluster,
                 getIndexTracks
-            ).map((item, index) => {
+            );
+            const getAllRreTrackFeatures = allRerTracks.map((item, index) => {
                 const eachFeature = new Feature({
                     geometry: new LineString(item),
                 });
                 eachFeature.setStyle(
                     new Style({
+                        text: new Text({
+                            font: '20px Calibri,sans-serif',
+                            text: index.toString(),
+                        }),
                         stroke: new Stroke({
                             width: 5,
                             color: colors[index],
@@ -265,6 +278,10 @@ class TrackCluster extends React.Component<IProps, IState> {
         }
     };
     showDialog = (index: number) => {
+        const { isShow } = this.state;
+        if (isShow) {
+            this.setState({ isShow: false });
+        }
         this.setState({ index });
         if (vectorTracks.getFeatures().length !== 0) vectorTracks.clear();
         if (clusterTracks.getFeatures().length !== 0) clusterTracks.clear();
@@ -273,33 +290,42 @@ class TrackCluster extends React.Component<IProps, IState> {
     render() {
         const arrButton = [0, 1, 2, 3, 4, 5, 6];
         const { index } = this.state;
+        const { isShow } = this.state;
+        const { landedCluster, landedTracks } = this.props;
+        const nextProps = { landedCluster, landedTracks, index };
         return (
-            <div className="cluster-groups">
-                {arrButton.map((item) => {
-                    return (
-                        <div key={item + '3'}>
-                            <button
-                                key={item}
-                                onClick={() => this.showDialog(item)}>{`分段${
-                                item + 1
-                            }`}</button>
-                            <div
-                                className={classNames('show-down', {
-                                    'close-down': index !== item,
-                                })}>
-                                <span onClick={this.handleShowTracks}>
-                                    原始轨迹
-                                </span>
-                                <span onClick={this.handleShowClusterSegTracks}>
-                                    分段聚类
-                                </span>
-                                <span onClick={this.handleShowClusterLine}>
-                                    整条聚类
-                                </span>
+            <div>
+                <div className="cluster-groups">
+                    {arrButton.map((item) => {
+                        return (
+                            <div key={item + '3'}>
+                                <button
+                                    key={item}
+                                    onClick={() =>
+                                        this.showDialog(item)
+                                    }>{`分段${item + 1}`}</button>
+                                <div
+                                    className={classNames('show-down', {
+                                        'close-down': index !== item,
+                                    })}>
+                                    <span onClick={this.handleShowTracks}>
+                                        原始轨迹
+                                    </span>
+                                    <span
+                                        onClick={
+                                            this.handleShowClusterSegTracks
+                                        }>
+                                        分段聚类
+                                    </span>
+                                    <span onClick={this.handleShowClusterLine}>
+                                        整条聚类
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
+                {isShow && <TrendPanel {...nextProps} />}
             </div>
         );
     }

@@ -7,6 +7,7 @@ import './main.less';
 import Menu from '../menuBar/Menu';
 import DetailPanel from '../detailPanel/DetailPanel';
 import BasisBar from '../basisBar/basisBar';
+import RiskPanel from '../dialog/riskPanel';
 import {
     getTyphoonLandedOrigin,
     getTyphoonLists,
@@ -98,6 +99,7 @@ class MainFlow extends React.Component<any, IState> {
                 <Menu handleControlPanel={this.handleConrolPanel} />
                 <BasisBar />
                 <DetailPanel index={index} />
+                <RiskPanel />
                 <div id="map"></div>
             </div>
         );

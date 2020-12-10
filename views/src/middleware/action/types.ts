@@ -7,3 +7,5 @@ export const LANDEDCLUSTER = 'LANDEDCLUSTER';
 export const ORIGINCLUSTER = 'ORIGINCLUSTER';
 
 export const LANDEDTRACK = 'LANDEDTRACK';
+
+export const TRENDINFO = 'TRENDINFO';

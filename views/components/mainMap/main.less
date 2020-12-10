@@ -8,4 +8,59 @@
         height: 100%;
         overflow: hidden;
     }
+    .risk-panel-show {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        transform: translateX(43%);
+        bottom: 120px;
+        font-size: 18px;
+        & > ul {
+            list-style: none;
+            margin: 0;
+            padding: 0px;
+            width: auto;
+            & > li {
+                float: left;
+                border: 2px solid rgba(214, 19, 19, 0.5);
+                margin-left: 2px;
+                border-radius: 8px;
+                position: relative;
+                ul {
+                    padding: 0px;
+                    position: absolute;
+                    top: -173px;
+                    left: -2px;
+                    li {
+                        cursor: pointer;
+                        user-select: none;
+                        border: 2px solid rgba(214, 19, 19, 0.5);
+                        border-bottom: none;
+                        border-radius: 8px;
+                        text-align: center;
+                        min-width: 114px;
+                        &:hover {
+                            color: rgba(100, 238, 20, 0.452);
+                            background-color: rgba(214, 19, 19, 0.5);
+                        }
+                    }
+                }
+            }
+            span {
+                cursor: pointer;
+                user-select: none;
+                display: inline-block;
+                margin: 0 8px;
+                min-width: 98px;
+                text-align: center;
+                &:hover {
+                    color: rgba(100, 238, 20, 0.452);
+                    background-color: rgba(214, 19, 19, 0.5);
+                }
+            }
+        }
+    }
+    .risk-panel-close {
+        display: none;
+    }
 }

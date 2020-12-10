@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import './detail.less';
 export default function DetailPanel({ index }: { index: string }) {
     const getPanel = (index: string) => {
+        console.log(index);
         switch (index) {
             case '01000':
                 return <InfluencedIndex />;

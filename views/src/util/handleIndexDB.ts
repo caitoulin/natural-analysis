@@ -68,6 +68,16 @@ export async function isExistTyphoonList(): Promise<number> {
                 });
                 resolve(0);
             }
+            if (!storeNames.contains('gridData')) {
+                isCreate = true;
+                const objectVulner = db.createObjectStore('gridData', {
+                    keyPath: 'indexId',
+                    autoIncrement: true,
+                });
+                objectVulner.createIndex('indexId', 'indexId', {
+                    unique: false,
+                });
+            }
         };
         request.onsuccess = (event) => {
             const db = (event.target as any).result;
@@ -78,6 +88,47 @@ export async function isExistTyphoonList(): Promise<number> {
         };
         request.onerror = () => {
             reject({ type: 'error' });
+        };
+    });
+}
+
+export function writeGridsDataToSore(data: any) {
+    const request = window.indexedDB.open('typhoonLists', 3);
+    request.onsuccess = function (event) {
+        const db = (event.target as any).result;
+        const trans = db.transaction('gridData', 'readwrite');
+        const store = trans.objectStore('gridData');
+        store.add(data);
+        db.close();
+    };
+    request.onerror = function () {
+        console.error('打开数据库失败');
+    };
+}
+/**
+ * @param getIndex 数据索引
+ */
+export async function getIndexGridsData(getIndex: string): Promise<any> {
+    const request = window.indexedDB.open('typhoonLists', 3);
+    return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => {
+            const db = (event.target as any).result;
+            const trans = db.transaction('gridData', 'readonly');
+            const store = trans.objectStore('gridData');
+            const index = store.index('indexId');
+            const request = index.get(getIndex);
+            request.onsuccess = (e: any) => {
+                const result = (e.target as any).result;
+                if (result) {
+                    resolve(result);
+                } else {
+                    resolve(0);
+                }
+            };
+            request.onerror = () => {
+                reject({ type: 'error' });
+            };
+            db.close();
         };
     });
 }

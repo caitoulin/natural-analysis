@@ -10,18 +10,13 @@ interface IProps {
 export default class Menu extends Component<IProps, any> {
     state: any = {
         menu: {
-            firstChapter: [
-                { SpatialAnalysis: ['影响力指数', '统计分析'] },
+            statisticalNalysis: [
+                { SpatialAnalysis: ['影响力指数', '统计图标'] },
                 { netAnalysis: ['登陆划分', '起源划分'] },
             ],
-            secondChapter: [
+            miningRisk: [
                 { trackDensity: ['轨迹可视化'] },
                 { trackDevelopment: ['轨迹聚类'] },
-            ],
-            thirdChapter: [
-                {
-                    RiskAssessment: ['致灾因子', '脆弱性', '风险'],
-                },
             ],
         },
         isSelectedFirst: [],

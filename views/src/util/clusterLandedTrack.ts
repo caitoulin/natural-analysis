@@ -1,6 +1,6 @@
 import { LANDTRACK, TRACKCOOR } from '../middleware/reducer/typhoonInfo';
 import { getAllTRacksLanded } from './analysisProcess';
-import * as turf from '@turf/turf';
+import { clusterTracksRepre } from './representTrac';
 export interface SEGMENT {
     tfbh: string;
     startIndex: number;
@@ -36,23 +36,6 @@ export function getLandedTrackSegment(
         return { segment, data: verifyTracks };
     });
     return getSegmentTracks;
-}
-
-/**
- * @param segment 分割段
- * @param getAllLandedPoints 所有的登陆点
- */
-function isCross(
-    segment: Array<Array<number>>,
-    getAllLandedPoints: TRACKCOOR[]
-) {
-    const getAllCoors = getAllLandedPoints.map((item) => {
-        const { coordinate } = item;
-        return [+coordinate[0].toFixed(2), +coordinate[1].toFixed(2)];
-    });
-    const line1 = turf.lineString(segment);
-    const line2 = turf.lineString(getAllCoors);
-    return turf.booleanDisjoint(line1, line2);
 }
 
 function getTwoPointDistance(a: number[], b: number[]) {
@@ -258,25 +241,6 @@ function similarDistanceByStrc(line1: SEGMENT, line2: SEGMENT) {
     return getTrackDistance(segmentOne, segmentTwo);
 }
 
-/**
- * 得到欧式距离上的相似性
- * @param line1
- * @param line2
- */
-function similarDistanceByDistance(line1: SEGMENT, line2: SEGMENT) {
-    const segmentOne = [
-        line1['values'][0],
-        line1['values'][line1['values'].length - 1],
-    ];
-    const segmentTwo = [
-        line2['values'][0],
-        line2['values'][line2['values'].length - 1],
-    ];
-    const distA = getTwoPointDistance(segmentOne[0], segmentTwo[0]);
-    const distB = getTwoPointDistance(segmentOne[1], segmentTwo[1]);
-    return +Math.sqrt(Math.pow(distA, 2) + Math.pow(distB, 2)).toFixed(2);
-}
-
 function getTrackDistance(segmentOne: number[][], segmentTwo: number[][]) {
     const distOne = getTwoPointDistance(segmentOne[0], segmentOne[1]);
     const distTwo = getTwoPointDistance(segmentTwo[0], segmentTwo[1]);
@@ -367,16 +331,7 @@ function getSimilarDist(shortLine: number[][], longLine: number[][]) {
         angelDistance,
     };
 }
-/**
- * 两条线段的相似性，欧式距离
- * @param line1
- * @param line2
- */
-function similarDistanceByOSDistance(line1: number[][], line2: number[][]) {
-    const distA = getTwoPointDistance(line1[0], line2[0]);
-    const distB = getTwoPointDistance(line1[1], line2[1]);
-    return +Math.sqrt(Math.pow(distA, 2) + Math.pow(distB, 2)).toFixed(2);
-}
+
 /**
  * 计算两条轨迹的相似性
  * @param line1
@@ -473,6 +428,7 @@ function computeDistance(
     }
     return dp[i][j];
 }
+
 function getSimilarByFrechet(line1: number[][], line2: number[][]) {
     const n = line1.length,
         m = line2.length;
@@ -588,119 +544,136 @@ export function allLinesDbscan(
     return clusters;
 }
 
-function ssRetrieveNeighbors(
-    eps: number,
-    line: EACHLINE,
-    cluster: Array<EACHLINE>
-) {
-    const neighbors = [];
-    let n = 0;
-    let dp = 0;
-    const line1 = Object.values(line)[0].map((item) => {
-        const { coordinate } = item;
-        return coordinate;
-    });
-    for (let i = 0; i < cluster.length; i++) {
-        if (line === cluster[i]) {
-            neighbors.push(i);
-            continue;
-        }
-        const line2 = Object.values(cluster[i])[0].map((item) => {
-            const { coordinate } = item;
-            return coordinate;
-        });
-        const compressIndexline1 = trackSplitSegment(line1, 0.3).map(
-            (item) => line1[item]
-        );
-        const compressIndexline2 = trackSplitSegment(line2, 0.3).map(
-            (item) => line2[item]
-        );
-        // const dist = getSimilarByDtw(line1, line2);
-        // const dist = frechet(compressIndexline1, compressIndexline2);
-        // const dist = getSimilarByFrechet(line1, line2);
-        const angel = getAngelValue(
-            [line1[0], line1[line1.length - 1]],
-            [line2[0], line2[line2.length - 1]]
-        );
-        const dist = getSimilarByLCSS(line1, line2);
-        if (dist <= eps) {
-            neighbors.push(i);
-            if (angel < 2) {
-                n++;
-            }
+function getRemainTracks(getLinesCluster: number[][], getIndexTracks: any) {
+    const clusterTracksIndex = getLinesCluster.reduce((a, b) => {
+        return a.concat(b);
+    }, []);
+    const getRemainIndex = [];
+    for (let i = 0; i < getIndexTracks.length; i++) {
+        if (!clusterTracksIndex.includes(i)) {
+            getRemainIndex.push(i);
         }
     }
-    dp = n / neighbors.length;
-    return { neighbors, dp };
+    return getRemainIndex;
 }
 
-export function ssAllLinesDbscan(
-    allLines: Array<EACHLINE>,
-    minLins: number,
-    eps: number,
-    delta: number
-) {
-    let clusterLabel = 0;
-    const labels = new Array(allLines.length).fill(0);
-    const clusters = [];
-    let currentDp = 0;
-    for (let i = 0; i < allLines.length; i++) {
-        if (labels[i] !== 0) continue;
-        const { neighbors, dp } = ssRetrieveNeighbors(
-            eps,
-            allLines[i],
-            allLines
-        );
-        if (neighbors.length < minLins) {
-            if (labels[i] === 0) {
-                labels[i] = 'noise';
-            }
-        } else {
-            clusterLabel += 1;
-            const cluster = [];
-            currentDp = dp;
-            for (let j1 = 0; j1 < neighbors.length; j1++) {
-                if (
-                    labels[neighbors[j1]] === 0 ||
-                    labels[neighbors[j1]] === 'noise'
-                ) {
-                    labels[neighbors[j1]] = clusterLabel;
-                    cluster.push(neighbors[j1]);
-                }
-            }
-            while (neighbors.length !== 0) {
-                const j2 = neighbors.pop();
-                const { neighbors: subNeighbors, dp } = ssRetrieveNeighbors(
-                    eps,
-                    allLines[j2],
-                    allLines
-                );
-                if (
-                    subNeighbors.length >= minLins &&
-                    Math.abs(currentDp - dp) <= delta
-                ) {
-                    for (let k = 0; k < subNeighbors.length; k++) {
-                        if (
-                            labels[subNeighbors[k]] === 0 ||
-                            labels[subNeighbors[k]] === 'noise'
-                        ) {
-                            neighbors.push(subNeighbors[k]);
-                            labels[subNeighbors[k]] = clusterLabel;
-                            cluster.push(subNeighbors[k]);
-                        }
-                    }
-                }
-            }
-            if (cluster.length < minLins) {
-                for (let j3 = 0; j3 < allLines.length; j3++) {
-                    if (labels[j3] === clusterLabel) {
-                        labels[j3] = 'noise';
-                    }
-                }
-            } else {
-                clusters.push(cluster);
+function deepCopy(obj: any) {
+    let targetObj = null;
+    if (obj && typeof obj === 'object') {
+        targetObj = Array.isArray(obj) ? [] : {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                targetObj[key] = deepCopy(obj[key]);
             }
         }
+    } else {
+        targetObj = obj;
     }
-    return clusters;
+    return targetObj;
+}
+
+export function combineClutserTracks(
+    getLinesCluster: number[][],
+    getIndexTracks: any,
+    index: number
+    // allRerTracks: number[][][]
+) {
+    const clusterCount = getLinesCluster.length;
+    const remainIndex: number[] = getRemainTracks(
+        getLinesCluster,
+        getIndexTracks
+    );
+    /*    for (let i = 0; i < clusterCount; i++) {
+        for (let j = i + 1; j < clusterCount; j++) {
+            const line1 = [
+                allRerTracks[i][0],
+                allRerTracks[i][allRerTracks[i].length - 1],
+            ];
+            const line2 = [
+                allRerTracks[j][0],
+                allRerTracks[j][allRerTracks[j].length - 1],
+            ];
+            const getAngel = getAngelValue(line1, line2);
+            console.log(i, j, getAngel);
+            if (getAngel < 30) {
+                nearIndex.push([i, j]);
+            }
+        }
+    } */
+    /**
+     * 经过聚类划分为以下三段
+     */
+    // 分段1：（0，2，3，5）（1）（4）
+    // 分段2：（2）（1，7） （0，3，5，6）
+    // 分段3：（0）（1）
+    let getNewClusterResult: number[][] = [];
+    if (index === 0) {
+        const clusterOne = [
+            ...getLinesCluster[0],
+            ...getLinesCluster[2],
+            ...getLinesCluster[3],
+            ...getLinesCluster[5],
+            111,
+            131,
+            86,
+        ];
+        const clusterTwo = getLinesCluster[1];
+        const clusterThree = getLinesCluster[4];
+        getNewClusterResult = [clusterOne, clusterTwo, clusterThree];
+    }
+    if (index === 1) {
+        const clusterOne = [
+            ...getLinesCluster[0],
+            ...getLinesCluster[3],
+            ...getLinesCluster[5],
+            ...getLinesCluster[6],
+            ...getLinesCluster[4],
+        ];
+        const clusterTwo = getLinesCluster[2];
+        const clusterThree = [...getLinesCluster[1], ...getLinesCluster[7]];
+        getNewClusterResult = [clusterOne, clusterTwo, clusterThree];
+    }
+    if (index === 2) {
+        getNewClusterResult = getLinesCluster;
+    }
+    const classifyNewTracks = deepCopy(getNewClusterResult);
+    const getNewMainTracks = clusterTracksRepre(
+        getNewClusterResult,
+        getIndexTracks
+    );
+    for (let i = 0; i < remainIndex.length; i++) {
+        const getAngelArray = [];
+        const lineProperty: any = Object.values(
+            getIndexTracks[remainIndex[i]]
+        )[0];
+        const getAllCoors = lineProperty.map((each: any) => {
+            const { coordinate } = each;
+            return coordinate;
+        });
+        const line1 = [getAllCoors[0], getAllCoors[getAllCoors.length - 1]];
+        for (let j = 0; j < getNewMainTracks.length; j++) {
+            const line2 = [
+                getNewMainTracks[j][0],
+                getNewMainTracks[j][getNewMainTracks[j].length - 1],
+            ];
+            const angel = getAngelValue(line1, line2);
+            getAngelArray.push(angel);
+        }
+        const getMinAngel = Math.min(...getAngelArray);
+        if (getMinAngel < 45) {
+            const index = getAngelArray.indexOf(getMinAngel);
+            classifyNewTracks[index].push(remainIndex[i]);
+        } /* else {
+            console.log(
+                getMinAngel,
+                remainIndex[i],
+                getIndexTracks[remainIndex[i]]
+            );
+        } */
+    }
+    const noiseIndex: number[] = getRemainTracks(
+        classifyNewTracks,
+        getIndexTracks
+    );
+    return { remainIndex, getNewClusterResult, classifyNewTracks, noiseIndex };
 }
