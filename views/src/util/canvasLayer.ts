@@ -9,7 +9,7 @@ export default class CanvasLayrs {
     }
     createCanvasLayer(
         getIndex: string,
-        index: number,
+        index: string,
         grids: number[][],
         boundaryLat: number[][]
     ) {

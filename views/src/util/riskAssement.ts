@@ -332,7 +332,7 @@ function getGridValueByCircle(
     }
 }
 
-export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: number) {
+export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
     return (
         extent: Extent,
         resolution: number,
@@ -476,7 +476,7 @@ function getColorByTrans(value: number) {
 function getColorByPoi(value: number) {
     // 行政管理单位,警察局、政府、法院
     if (value <= 2014) return 'rgb(240,72,184)';
-    // 教育 幼儿园，学校
+    // 教育 幼儿 学校
     if (value <= 2084 && value >= 2082) return 'rgb(242,214,53)';
     // 医疗卫生 医院诊所
     if (value <= 2129 && value >= 2110) return 'rgb(240,72,184)';
@@ -489,19 +489,19 @@ function getColorByPoi(value: number) {
     if (value >= 2901 || [2015, 2030, 2031].includes(value))
         return 'rgb(230,133,64)';
 }
-function getColorByIndex(index: number, value: number) {
+function getColorByIndex(index: string, value: number) {
     switch (index) {
-        case 0:
+        case 'V0':
             return getColorByGdp(value);
-        case 1:
+        case 'V1':
             return getColorByPop(value);
-        case 2:
+        case 'V2':
             return getColorByPoi(value);
-        case 3:
+        case 'V3':
             return getColorByLucc(value);
-        case 4:
+        case 'V4':
             return getColorByTrans(value);
-        case 5:
+        case 'V5':
             return 'rgb(255,0,0)';
     }
 }
