@@ -75,7 +75,7 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
         }
         this.canvasLayer.createCanvasLayer(
             getIndex,
-            'V'+index,
+            'V' + index,
             getGridData,
             boundaryLat
         );

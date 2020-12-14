@@ -122,7 +122,7 @@ function circleBoundary(
     const leftY = Math.floor((boundLeftLat - extent[0][1]) / grid[0]);
     const rightX = Math.floor((boundRightLng - extent[0][0]) / grid[0]);
     const rightY = Math.floor((boundRightLat - extent[0][1]) / grid[0]);
-    for (let i = leftX; i < rightX; i++) {
+    for (let i = leftX; i <= rightX; i++) {
         for (let j = leftY; j <= rightY; j++) {
             grids[i][j] = grids[i][j] + value;
         }

@@ -246,6 +246,18 @@ export async function getHazardIndex(
             writeGridsDataToSore({ indexId: wind, grids: windGrids });
         }
         ///加权计算
+        const n = windGrids.length;
+        const m = windGrids[0].length;
+        const grids = new Array(n);
+        for (let i = 0; i < n; i++) {
+            grids[i] = new Array(m);
+            for (let j = 0; j < m; j++) {
+                grids[i][j] =
+                    (0.6 * windGrids[i][j]) / 3788 +
+                    (0.4 * timesGrids[i][j]) / 2394;
+            }
+        }
+        return grids;
     }
 }
 export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
@@ -260,7 +272,7 @@ export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
             grids[i][j] = 0;
         }
     }
-    trackInfo.forEach((eachLine) => {
+    trackInfo.forEach((eachLine, index) => {
         const getPoints = Object.values(eachLine)[0];
         getPoints.forEach((each) => {
             const {
@@ -268,14 +280,25 @@ export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
                 windCircle: { sevenCicle, tenCicle, twelveCicle },
             } = each;
             if (sevenCicle > 0) {
-                getGridValueByCircle(
-                    coordinate,
-                    sevenCicle,
-                    boundaryLat,
-                    grids,
-                    1
-                );
-                if (isWind) return;
+                if (isWind) {
+                    getGridValueByCircle(
+                        coordinate,
+                        sevenCicle,
+                        boundaryLat,
+                        grids,
+                        1,
+                        true
+                    );
+                    return;
+                } else {
+                    getGridValueByCircle(
+                        coordinate,
+                        sevenCicle,
+                        boundaryLat,
+                        grids,
+                        1
+                    );
+                }
             }
             if (tenCicle > 0) {
                 getGridValueByCircle(
@@ -296,8 +319,111 @@ export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
                 );
             }
         });
+        for (let i = 0; i < getPoints.length - 1; i++) {
+            const getArrayPoints = interpolationPoints(
+                getPoints[i],
+                getPoints[i + 1]
+            );
+            getArrayPoints.forEach((item) => {
+                const {
+                    coordinate,
+                    windCircle: { sevenCicle, tenCicle, twelveCicle },
+                } = item;
+                if (sevenCicle > 0) {
+                    if (isWind) {
+                        getGridValueByCircle(
+                            coordinate,
+                            sevenCicle,
+                            boundaryLat,
+                            grids,
+                            1,
+                            true
+                        );
+                        return;
+                    } else {
+                        getGridValueByCircle(
+                            coordinate,
+                            sevenCicle,
+                            boundaryLat,
+                            grids,
+                            1
+                        );
+                    }
+                }
+                if (tenCicle > 0) {
+                    getGridValueByCircle(
+                        coordinate,
+                        tenCicle,
+                        boundaryLat,
+                        grids,
+                        2
+                    );
+                }
+                if (twelveCicle > 0) {
+                    getGridValueByCircle(
+                        coordinate,
+                        twelveCicle,
+                        boundaryLat,
+                        grids,
+                        3
+                    );
+                }
+            });
+        }
     });
+    /*    let max = 0;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < m; j++) {
+            if (max < grids[i][j]) {
+                max = grids[i][j];
+            }
+        }
+    }
+    console.log(max); // 插值计算,计算影响趋势的最大值 */
     return grids;
+}
+
+function interpolationPoints(prePoint: TRACKCOOR, curPoint: TRACKCOOR) {
+    const polatCount = 2;
+    const coorXDeviation = [
+        curPoint['coordinate'][0] - prePoint['coordinate'][0],
+        curPoint['coordinate'][1] - prePoint['coordinate'][1],
+    ];
+    const proDeviation = [
+        curPoint['currentSpeed'] - prePoint['currentSpeed'],
+        curPoint['windCircle']['sevenCicle'] -
+            prePoint['windCircle']['sevenCicle'],
+        curPoint['windCircle']['tenCicle'] - prePoint['windCircle']['tenCicle'],
+        curPoint['windCircle']['twelveCicle'] -
+            prePoint['windCircle']['twelveCicle'],
+    ];
+    const getArray = new Array(polatCount).fill('').map((item, index) => {
+        const coorX =
+            (coorXDeviation[0] * (index + 1)) / (polatCount + 1) +
+            prePoint['coordinate'][0];
+        const coorY =
+            (coorXDeviation[1] * (index + 1)) / (polatCount + 1) +
+            prePoint['coordinate'][1];
+        const currentSpeed =
+            (proDeviation[0] * (index + 1)) / (polatCount + 1) +
+            prePoint['currentSpeed'];
+        const windCircle = {
+            sevenCicle: Math.floor(
+                (proDeviation[1] * (index + 1)) / (polatCount + 1) +
+                    prePoint['windCircle']['sevenCicle']
+            ),
+            tenCicle: Math.floor(
+                (proDeviation[2] * (index + 1)) / (polatCount + 1) +
+                    prePoint['windCircle']['tenCicle']
+            ),
+            twelveCicle: Math.floor(
+                (proDeviation[3] * (index + 1)) / (polatCount + 1) +
+                    prePoint['windCircle']['tenCicle']
+            ),
+        };
+        return { coordinate: [coorX, coorY], currentSpeed, windCircle };
+    });
+    return getArray;
 }
 
 function getGridValueByCircle(
@@ -305,18 +431,31 @@ function getGridValueByCircle(
     circle: number,
     boundaryLat: number[][],
     grids: number[][],
-    value: number
+    value: number,
+    isWind?: boolean
 ) {
     if (circle > 0) {
-        const leftTopLng = coordinate[0] - circle / eachRadius;
-        const leftTopLat = coordinate[1] + circle / eachRadius;
-        const rightDownLng = coordinate[0] + circle / eachRadius;
-        const rightDownLat = coordinate[1] - circle / eachRadius;
+        let leftTopLng = coordinate[0] - circle / eachRadius;
+        let leftTopLat = coordinate[1] + circle / eachRadius;
+        let rightDownLng = coordinate[0] + circle / eachRadius;
+        let rightDownLat = coordinate[1] - circle / eachRadius;
+        if (rightDownLat < downRightCoor[1]) {
+            rightDownLat = downRightCoor[1];
+        }
+        if (leftTopLat > topLeftCoor[1]) {
+            leftTopLat = topLeftCoor[1];
+        }
+        if (leftTopLng < topLeftCoor[0]) {
+            leftTopLng = topLeftCoor[0];
+        }
+        if (rightDownLng > downRightCoor[0]) {
+            rightDownLng = downRightCoor[0];
+        }
         const leftTopX = Math.floor(
-            (leftTopLng[0] - boundaryLat[0][0]) / gridWidth
+            (leftTopLng - boundaryLat[0][0]) / gridWidth
         );
         const leftTopY = Math.floor(
-            (boundaryLat[0][1] - leftTopLat[1]) / gridWidth
+            (boundaryLat[0][1] - leftTopLat) / gridWidth
         );
         const rightDownX = Math.floor(
             (rightDownLng - boundaryLat[0][0]) / gridWidth
@@ -324,9 +463,17 @@ function getGridValueByCircle(
         const rightDownY = Math.floor(
             (boundaryLat[0][1] - rightDownLat) / gridWidth
         );
-        for (let i = leftTopX; i < rightDownX; i++) {
-            for (let j = leftTopY; j <= rightDownY; j++) {
-                grids[i][j] = grids[i][j] + value;
+        if (isWind) {
+            for (let i = leftTopX; i < rightDownX; i++) {
+                for (let j = leftTopY; j <= rightDownY; j++) {
+                    grids[i][j] = grids[i][j] + value;
+                }
+            }
+        } else {
+            for (let i = leftTopX; i < rightDownX; i++) {
+                for (let j = leftTopY; j <= rightDownY; j++) {
+                    grids[i][j] = grids[i][j] + value;
+                }
             }
         }
     }
@@ -489,6 +636,37 @@ function getColorByPoi(value: number) {
     if (value >= 2901 || [2015, 2030, 2031].includes(value))
         return 'rgb(230,133,64)';
 }
+
+function getColorByInfluenceTimes(value: number) {
+    if (value < 10) return colors[0];
+    if (value < 30) return colors[1];
+    if (value < 60) return colors[2];
+    if (value < 100) return colors[3];
+    if (value < 150) return colors[4];
+    if (value < 220) return colors[5];
+    if (value < 450) return colors[6];
+    if (value < 950) return colors[7];
+    if (value < 1400) return colors[8];
+    if (value < 1750) return colors[9];
+    if (value < 2145) return colors[10];
+    return colors[11];
+}
+
+function getColorByWind(value: number) {
+    if (value < 10) return colors[0];
+    if (value < 30) return colors[1];
+    if (value < 60) return colors[2];
+    if (value < 100) return colors[3];
+    if (value < 200) return colors[4];
+    if (value < 320) return colors[5];
+    if (value < 560) return colors[6];
+    if (value < 900) return colors[7];
+    if (value < 1600) return colors[8];
+    if (value < 2400) return colors[9];
+    if (value < 3150) return colors[10];
+    return colors[11];
+}
+
 function getColorByIndex(index: string, value: number) {
     switch (index) {
         case 'V0':
@@ -503,5 +681,11 @@ function getColorByIndex(index: string, value: number) {
             return getColorByTrans(value);
         case 'V5':
             return 'rgb(255,0,0)';
+        case 'H0':
+            return getColorByInfluenceTimes(value);
+        case 'H1':
+            return getColorByWind(value);
+        case 'H2':
+            return getColorByTrans(value);
     }
 }

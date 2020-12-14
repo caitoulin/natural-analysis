@@ -9,6 +9,7 @@ import {
     getGrids,
     getVulnerGrids,
     getEachHazardGrids,
+    getHazardIndex,
 } from '../../src/util/riskAssement';
 
 interface IState {
@@ -50,7 +51,7 @@ export default class HazardPanel extends React.Component<IProps, IState> {
         }
         this.preIndex = getIndex;
         const result = await getIndexGridsData(getIndex);
-        const { boundNum, boundaryLat } = getBoundary(trackInfo);
+        const { boundaryLat } = getBoundary(trackInfo);
         let getGridData;
         if (!!result) {
             const getData = result as VData;
@@ -58,21 +59,21 @@ export default class HazardPanel extends React.Component<IProps, IState> {
         } else {
             if (index > 1) {
                 console.time('1');
-                getVulnerGrids(boundNum, segment, trendIndex);
+                getGridData = await getHazardIndex(trackInfo, segment, trendIndex);
                 console.timeEnd('1');
             } else {
                 index === 0
-                    ? (getGridData = getEachHazardGrids(trackInfo, false))
-                    : (getGridData = getEachHazardGrids(trackInfo, true));
+                    ? (getGridData = getEachHazardGrids(trackInfo, true))
+                    : (getGridData = getEachHazardGrids(trackInfo, false));
                 writeGridsDataToSore({ indexId: getIndex, grids: getGridData });
             }
         }
-        /*    this.canvasLayer.createCanvasLayer(
+        this.canvasLayer.createCanvasLayer(
             getIndex,
-            index,
+            'H' + index,
             getGridData,
             boundaryLat
-        ); */
+        );
     };
     render() {
         const { Indexes } = this.state;
