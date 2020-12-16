@@ -213,6 +213,12 @@ export async function getVulnerGrids(
     });
 }
 
+/**
+ * return 得到登陆趋势上的风险系数
+ * @param trackInfo 登陆台风轨迹
+ * @param segment 登陆段编号
+ * @param trendIndex 登陆趋势编号
+ */
 export async function getHazardIndex(
     trackInfo: EACHLINE[],
     segment: number,
@@ -257,6 +263,15 @@ export async function getHazardIndex(
                     (0.4 * timesGrids[i][j]) / 2394;
             }
         }
+       /*  let max = 0;
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < m; j++) {
+                if (max < grids[i][j]) {
+                    max = grids[i][j];
+                }
+            }
+        }
+        console.log(max); // 插值计算,计算影响趋势的最大值 */
         return grids;
     }
 }
@@ -487,7 +502,7 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
         size: Size,
         projection: Projection
     ) => {
-        const { grids, renderExtent } = plotData;
+        const { grids, renderExtent, getGridDataVL } = plotData;
         const gridWidth = 0.0083333333;
         const canvas = document.createElement('canvas');
         canvas.width = size[0];
@@ -503,7 +518,7 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
         const wy = Math.ceil((gridWidth * canvas.height) / range[1]);
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < m; j++) {
-                if (grids[i][j] <= 0) continue;
+                if (grids[i][j] <= 0 || getGridDataVL[i][j] <= 0) continue;
                 const x =
                     (canvas.width *
                         (i * gridWidth + renderExtent[0][0] - extent[0])) /
@@ -605,20 +620,18 @@ function getColorByLucc(value: number) {
     }
 }
 function getColorByTrans(value: number) {
-    switch (value) {
-        case 5601:
-            return 'rgb(240,72,184)';
-        case 5602:
-            return 'rgb(242,214,53)';
-        case 5621:
-            return 'rgb(29,186,207)';
-        case 5622:
-            return 'rgb(16,9,227)';
-        case 5641:
-            return 'rgb(40,232,30)';
-        case 5661:
-            return 'rgb(247,27,38)';
-    }
+    if (value < 10) return colors[0];
+    if (value < 30) return colors[1];
+    if (value < 60) return colors[2];
+    if (value < 100) return colors[3];
+    if (value < 200) return colors[4];
+    if (value < 320) return colors[5];
+    if (value < 560) return colors[6];
+    if (value < 900) return colors[7];
+    if (value < 1600) return colors[8];
+    if (value < 2400) return colors[9];
+    if (value < 3150) return colors[10];
+    return colors[11];
 }
 function getColorByPoi(value: number) {
     // 行政管理单位,警察局、政府、法院
@@ -652,6 +665,20 @@ function getColorByInfluenceTimes(value: number) {
     return colors[11];
 }
 
+function getColorByH(value: number) {
+    if (value < 0.025) return colors[0];
+    if (value < 0.075) return colors[1];
+    if (value < 0.125) return colors[2];
+    if (value < 0.185) return colors[3];
+    if (value < 0.235) return colors[4];
+    if (value < 0.3) return colors[5];
+    if (value < 0.415) return colors[6];
+    if (value < 0.525) return colors[7];
+    if (value < 0.65) return colors[8];
+    if (value < 0.75) return colors[9];
+    if (value < 0.825) return colors[10];
+    return colors[11];
+}
 function getColorByWind(value: number) {
     if (value < 10) return colors[0];
     if (value < 30) return colors[1];
@@ -686,6 +713,6 @@ function getColorByIndex(index: string, value: number) {
         case 'H1':
             return getColorByWind(value);
         case 'H2':
-            return getColorByTrans(value);
+            return getColorByH(value);
     }
 }

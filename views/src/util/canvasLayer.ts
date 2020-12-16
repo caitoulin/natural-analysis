@@ -11,7 +11,8 @@ export default class CanvasLayrs {
         getIndex: string,
         index: string,
         grids: number[][],
-        boundaryLat: number[][]
+        boundaryLat: number[][],
+        getGridDataVL?: number[][]
     ) {
         const { canvasArrays } = this;
         canvasArrays.forEach((element: any) => {
@@ -23,7 +24,7 @@ export default class CanvasLayrs {
         const canvasLayer = new ImageLayer({
             source: new ImageCanvasSource({
                 canvasFunction: plotRiskAssessmentGrids(
-                    { grids, renderExtent: boundaryLat },
+                    { grids, renderExtent: boundaryLat, getGridDataVL },
                     index
                 ),
                 projection: 'EPSG:4326',

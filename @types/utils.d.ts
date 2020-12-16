@@ -31,4 +31,5 @@ interface VData {
 interface PLOTGRIDS {
     grids: number[][];
     renderExtent: number[][];
+    getGridDataVL?: number[][];
 }
