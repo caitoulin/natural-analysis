@@ -171,11 +171,6 @@ export function getAllRequestVGrids(
             return new Promise((resolve, reject) => {
                 getDataIndex(url, bound)
                     .then((value) => {
-                        /*    const storeData = {
-                            indexId: getIndex,
-                            grids: value['data'],
-                        };
-                        writeGridsDataToSore(storeData); */
                         resolve({
                             indexId: getIndex,
                             grids: value['data'],
@@ -229,7 +224,7 @@ export async function getHazardIndex(
         : segment.toString() + '2' + 'H';
     const hazardIndex = await getIndexGridsData(hazard);
     if (!!hazardIndex) {
-        return hazardIndex;
+        return hazardIndex['grids'];
     } else {
         const times = trendIndex
             ? segment.toString() + trendIndex.toString() + '0' + 'H'
@@ -238,12 +233,12 @@ export async function getHazardIndex(
             ? segment.toString() + trendIndex.toString() + '1' + 'H'
             : segment.toString() + '1' + 'H';
         const timeIndex = await getIndexGridsData(times);
-        const windIndex = await getIndexGridsData(hazard);
+        const windIndex = await getIndexGridsData(wind);
         const timesGrids = !!timeIndex
-            ? timeIndex
+            ? timeIndex['grids']
             : getEachHazardGrids(trackInfo, false);
         const windGrids = !!windIndex
-            ? windIndex
+            ? windIndex['grids']
             : getEachHazardGrids(trackInfo, true);
         if (!timeIndex) {
             writeGridsDataToSore({ indexId: times, grids: timesGrids });
@@ -263,7 +258,7 @@ export async function getHazardIndex(
                     (0.4 * timesGrids[i][j]) / 2394;
             }
         }
-       /*  let max = 0;
+        /*  let max = 0;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < m; j++) {
                 if (max < grids[i][j]) {
@@ -398,6 +393,11 @@ export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
     return grids;
 }
 
+/**
+ * 获取插值后的台风轨迹点及属性
+ * @param prePoint 前一个台风点
+ * @param curPoint 目前点
+ */
 function interpolationPoints(prePoint: TRACKCOOR, curPoint: TRACKCOOR) {
     const polatCount = 2;
     const coorXDeviation = [
@@ -441,6 +441,15 @@ function interpolationPoints(prePoint: TRACKCOOR, curPoint: TRACKCOOR) {
     return getArray;
 }
 
+/**
+ * 通过风圈得到栅格的值
+ * @param coordinate 坐标
+ * @param circle 风圈半径
+ * @param boundaryLat 范围
+ * @param grids 
+ * @param value 权重值
+ * @param isWind 是否计算风圈影响力
+ */
 function getGridValueByCircle(
     coordinate: number[],
     circle: number,
@@ -535,6 +544,10 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
     };
 }
 
+/**
+ * 根据gdp值得到颜色
+ * @param value 栅格GDP值
+ */
 function getColorByGdp(value: number) {
     if (value < 761) return colors[0];
     if (value < 2653) return colors[1];
@@ -549,6 +562,10 @@ function getColorByGdp(value: number) {
     if (value < 766279) return colors[10];
     if (value < 1998169) return colors[11];
 }
+/**
+ * 根据人口栅格值得到颜色
+ * @param value 
+ */
 function getColorByPop(value: number) {
     if (value < 1030) return colors[0];
     if (value < 5151) return colors[1];
@@ -563,6 +580,10 @@ function getColorByPop(value: number) {
     if (value < 138058) return colors[10];
     if (value < 262723) return colors[11];
 }
+/**
+ * 根据土地利用类型得到颜色
+ * @param value 
+ */
 function getColorByLucc(value: number) {
     switch (value) {
         case 11:
@@ -619,6 +640,10 @@ function getColorByLucc(value: number) {
             return 'rgb(0,0,0)';
     }
 }
+/**
+ * 根据交通类型得到颜色
+ * @param value 
+ */
 function getColorByTrans(value: number) {
     if (value < 10) return colors[0];
     if (value < 30) return colors[1];
@@ -633,6 +658,10 @@ function getColorByTrans(value: number) {
     if (value < 3150) return colors[10];
     return colors[11];
 }
+/**
+ * 根据POI密度得到颜色
+ * @param value 
+ */
 function getColorByPoi(value: number) {
     // 行政管理单位,警察局、政府、法院
     if (value <= 2014) return 'rgb(240,72,184)';
@@ -650,6 +679,10 @@ function getColorByPoi(value: number) {
         return 'rgb(230,133,64)';
 }
 
+/**
+ * 根据影像次数获取颜色
+ * @param value 
+ */
 function getColorByInfluenceTimes(value: number) {
     if (value < 10) return colors[0];
     if (value < 30) return colors[1];
@@ -664,7 +697,10 @@ function getColorByInfluenceTimes(value: number) {
     if (value < 2145) return colors[10];
     return colors[11];
 }
-
+/**
+ * 根据危险系数获取颜色
+ * @param value 
+ */
 function getColorByH(value: number) {
     if (value < 0.025) return colors[0];
     if (value < 0.075) return colors[1];
@@ -679,6 +715,10 @@ function getColorByH(value: number) {
     if (value < 0.825) return colors[10];
     return colors[11];
 }
+/**
+ * 根据风趣指数获取颜色
+ * @param value 
+ */
 function getColorByWind(value: number) {
     if (value < 10) return colors[0];
     if (value < 30) return colors[1];
@@ -694,6 +734,11 @@ function getColorByWind(value: number) {
     return colors[11];
 }
 
+/**
+ * 获取值对应的颜色
+ * @param index 点击序号
+ * @param value 栅格值
+ */
 function getColorByIndex(index: string, value: number) {
     switch (index) {
         case 'V0':
