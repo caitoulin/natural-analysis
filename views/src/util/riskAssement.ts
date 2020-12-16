@@ -446,7 +446,7 @@ function interpolationPoints(prePoint: TRACKCOOR, curPoint: TRACKCOOR) {
  * @param coordinate 坐标
  * @param circle 风圈半径
  * @param boundaryLat 范围
- * @param grids 
+ * @param grids
  * @param value 权重值
  * @param isWind 是否计算风圈影响力
  */
@@ -564,7 +564,7 @@ function getColorByGdp(value: number) {
 }
 /**
  * 根据人口栅格值得到颜色
- * @param value 
+ * @param value
  */
 function getColorByPop(value: number) {
     if (value < 1030) return colors[0];
@@ -582,7 +582,7 @@ function getColorByPop(value: number) {
 }
 /**
  * 根据土地利用类型得到颜色
- * @param value 
+ * @param value
  */
 function getColorByLucc(value: number) {
     switch (value) {
@@ -642,7 +642,7 @@ function getColorByLucc(value: number) {
 }
 /**
  * 根据交通类型得到颜色
- * @param value 
+ * @param value
  */
 function getColorByTrans(value: number) {
     if (value < 10) return colors[0];
@@ -660,7 +660,7 @@ function getColorByTrans(value: number) {
 }
 /**
  * 根据POI密度得到颜色
- * @param value 
+ * @param value
  */
 function getColorByPoi(value: number) {
     // 行政管理单位,警察局、政府、法院
@@ -681,7 +681,7 @@ function getColorByPoi(value: number) {
 
 /**
  * 根据影像次数获取颜色
- * @param value 
+ * @param value
  */
 function getColorByInfluenceTimes(value: number) {
     if (value < 10) return colors[0];
@@ -699,7 +699,7 @@ function getColorByInfluenceTimes(value: number) {
 }
 /**
  * 根据危险系数获取颜色
- * @param value 
+ * @param value
  */
 function getColorByH(value: number) {
     if (value < 0.025) return colors[0];
@@ -717,7 +717,7 @@ function getColorByH(value: number) {
 }
 /**
  * 根据风趣指数获取颜色
- * @param value 
+ * @param value
  */
 function getColorByWind(value: number) {
     if (value < 10) return colors[0];
