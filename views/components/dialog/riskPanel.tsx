@@ -4,6 +4,9 @@ import { EACHLINE } from '../../src/util/clusterLandedTrack';
 import VulnerPanel from './vulnerPanel';
 import HazardPanel from './hazardPanel';
 import classNames from 'classnames';
+import { getRiskIndex, getBoundary } from '../../src/util/riskAssement';
+import CanvasLayrs from '../../src/util/canvasLayer';
+import LengendPanel from '../dialog/legendPanel';
 interface IProps {
     segment: number | null;
     trendIndex: number | null;
@@ -14,9 +17,12 @@ interface IState {
     isShowH: boolean;
 }
 class RiskPanel extends React.Component<IProps, IState> {
+    canvasLayer: any; preIndex: any;
     constructor(props: IProps) {
         super(props);
         this.state = { isShowV: false, isShowH: false };
+        this.canvasLayer = new CanvasLayrs();
+        this.preIndex = null;
     }
     showHazard = async () => {
         this.setState((preState) => ({ isShowH: !preState.isShowH }));
@@ -24,7 +30,36 @@ class RiskPanel extends React.Component<IProps, IState> {
     showVlunter = () => {
         this.setState((preState) => ({ isShowV: !preState.isShowV }));
     };
-    showRisk = () => {};
+    showRisk = async () => {
+        const { segment, trendIndex, trackInfo } = this.props;
+        const getIndex = trendIndex
+            ? segment.toString() + trendIndex.toString() + 'R'
+            : segment.toString() + 'R';
+        const getLayer = this.canvasLayer.getLayerByIndex(getIndex);
+        if (this.preIndex === getIndex) {
+            getLayer.getVisible()
+                ? getLayer.setVisible(false)
+                : getLayer.setVisible(true);
+            return;
+        }
+        if (getLayer) {
+            getLayer.setVisible(true);
+            this.preIndex = getIndex;
+            return;
+        }
+        this.preIndex = getIndex;
+        const { boundaryLat } = getBoundary(trackInfo);
+        const riskIndex = await getRiskIndex(trackInfo, segment, trendIndex);
+        this.canvasLayer.createCanvasLayer(
+            getIndex,
+            'R',
+            riskIndex,
+            boundaryLat,
+        );
+    };
+    changeLengendStatus = () => {
+
+    }
     render() {
         const { isShowV, isShowH } = this.state;
         const { segment, trendIndex, trackInfo } = this.props;
@@ -35,6 +70,15 @@ class RiskPanel extends React.Component<IProps, IState> {
                 className={classNames('risk-panel-show', {
                     'risk-panel-close': segment === null,
                 })}>
+                <LengendPanel />
+                <span>
+                    <input
+                        type="checkbox"
+                        defaultChecked={true}
+                        onChange={this.changeLengendStatus}
+                    />
+                    {'图例'}
+                </span>
                 <ul>
                     <li onClick={this.showHazard}>
                         <span>{'危险性'}</span>

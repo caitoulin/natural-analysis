@@ -158,7 +158,6 @@ export function getAllRequestVGrids(
         '/get/popIndex',
         '/get/poiIndex',
         '/get/landIndex',
-        '/get/transIndex',
     ];
     const noStore: any = [];
     const requestArrays = urls.map(async (url, index) => {
@@ -191,12 +190,19 @@ export function getAllRequestVGrids(
  * @param segment
  * @param trendIndex
  */
-// 未编辑完成
+// // 定权（POI:0.2002 人口0.3290 土地利用：0.1418 GDP:0.3290)
 export async function getVulnerGrids(
     bound: BOUND,
     segment: number,
     trendIndex: number
 ) {
+    const vulner = trendIndex
+        ? segment.toString() + trendIndex.toString() + '4' + 'V'
+        : segment.toString() + '4' + 'V';
+    const vulnerIndex = await getIndexGridsData(vulner);
+    if (!!vulnerIndex) return vulnerIndex['grids'];
+    const maxPop = 262722.7813;
+    const maxGdp = 1998169;
     const getReturnValues: any = getAllRequestVGrids(
         bound,
         segment,
@@ -206,6 +212,42 @@ export async function getVulnerGrids(
     getReturnValues[1].forEach((element: any) => {
         writeGridsDataToSore(getAllGrids[element]);
     });
+    const n = getAllGrids[0]['grids'].length;
+    const m = getAllGrids[0]['grids'][0].length;
+    const grids = new Array(n);
+    for (let i = 0; i < n; i++) {
+        grids[i] = new Array(m);
+        for (let j = 0; j < m; j++) {
+            const gdpValue = getAllGrids[0]['grids'][i][j]
+                ? getAllGrids[0]['grids'][i][j] / maxGdp
+                : 0;
+            const popValue = getAllGrids[1]['grids'][i][j]
+                ? getAllGrids[1]['grids'][i][j] / maxPop
+                : 0;
+            const poiValue = getAllGrids[2]['grids'][i][j]
+                ? getAllGrids[2]['grids'][i][j]
+                : 0;
+            const luccValue = getLuccValueByWeight(
+                getAllGrids[3]['grids'][i][j]
+            );
+            grids[i][j] =
+                0.329 * gdpValue +
+                popValue * 0.329 +
+                poiValue * 0.2002 +
+                0.1418 * luccValue;
+        }
+    }
+    let max = 0;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < m; j++) {
+            if (max < grids[i][j]) {
+                max = grids[i][j];
+            }
+        }
+    }
+    console.log(max); // 插值计算,计算影响趋势的最大值
+    writeGridsDataToSore({ indexId: vulner, grids });
+    return grids;
 }
 
 /**
@@ -258,15 +300,7 @@ export async function getHazardIndex(
                     (0.4 * timesGrids[i][j]) / 2394;
             }
         }
-        /*  let max = 0;
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < m; j++) {
-                if (max < grids[i][j]) {
-                    max = grids[i][j];
-                }
-            }
-        }
-        console.log(max); // 插值计算,计算影响趋势的最大值 */
+        writeGridsDataToSore({ indexId: hazard, grids });
         return grids;
     }
 }
@@ -390,6 +424,34 @@ export function getEachHazardGrids(trackInfo: EACHLINE[], isWind: boolean) {
         }
     }
     console.log(max); // 插值计算,计算影响趋势的最大值 */
+    return grids;
+}
+
+export async function getRiskIndex(
+    trackInfo: EACHLINE[],
+    segment: number,
+    trendIndex: number
+) {
+    const getIndex = trendIndex
+        ? segment.toString() + trendIndex.toString() + 'R'
+        : segment.toString() + 'R';
+    const riskIndex = await getIndexGridsData(getIndex);
+    if (!!riskIndex) {
+        return riskIndex['grids'];
+    }
+    const hazardGrids = await getHazardIndex(trackInfo, segment, trendIndex);
+    const { boundNum } = getBoundary(trackInfo);
+    const vulnerGrids = await getVulnerGrids(boundNum, segment, trendIndex);
+    const n = vulnerGrids.length;
+    const m = vulnerGrids[0].length;
+    const grids = new Array(n);
+    for (let i = 0; i < n; i++) {
+        grids[i] = new Array(m);
+        for (let j = 0; j < m; j++) {
+            grids[i][j] = (hazardGrids[i][j] * vulnerGrids[i][j]) / 0.268974576;
+        }
+    }
+    writeGridsDataToSore({ indexId: getIndex, grids });
     return grids;
 }
 
@@ -525,21 +587,40 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
         const m = grids[0].length;
         const wx = Math.ceil((gridWidth * canvas.width) / range[0]);
         const wy = Math.ceil((gridWidth * canvas.height) / range[1]);
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < m; j++) {
-                if (grids[i][j] <= 0 || getGridDataVL[i][j] <= 0) continue;
-                const x =
-                    (canvas.width *
-                        (i * gridWidth + renderExtent[0][0] - extent[0])) /
-                    range[0];
-                const y =
-                    (canvas.height *
-                        (j * gridWidth + extent[3] - renderExtent[0][1])) /
-                    range[1];
-                ctx.fillStyle = getColorByIndex(index, grids[i][j]);
-                ctx.fillRect(x, y, wx, wy);
+        if (!!getGridDataVL) {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < m; j++) {
+                    if (grids[i][j] <= 0 || getGridDataVL[i][j] <= 0) continue;
+                    const x =
+                        (canvas.width *
+                            (i * gridWidth + renderExtent[0][0] - extent[0])) /
+                        range[0];
+                    const y =
+                        (canvas.height *
+                            (j * gridWidth + extent[3] - renderExtent[0][1])) /
+                        range[1];
+                    ctx.fillStyle = getColorByIndex(index, grids[i][j]);
+                    ctx.fillRect(x, y, wx, wy);
+                }
+            }
+        } else {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < m; j++) {
+                    if (grids[i][j] <= 0) continue;
+                    const x =
+                        (canvas.width *
+                            (i * gridWidth + renderExtent[0][0] - extent[0])) /
+                        range[0];
+                    const y =
+                        (canvas.height *
+                            (j * gridWidth + extent[3] - renderExtent[0][1])) /
+                        range[1];
+                    ctx.fillStyle = getColorByIndex(index, grids[i][j]);
+                    ctx.fillRect(x, y, wx, wy);
+                }
             }
         }
+
         return canvas;
     };
 }
@@ -549,17 +630,17 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
  * @param value 栅格GDP值
  */
 function getColorByGdp(value: number) {
-    if (value < 761) return colors[0];
-    if (value < 2653) return colors[1];
-    if (value < 6203) return colors[2];
-    if (value < 12709) return colors[3];
-    if (value < 24387) return colors[4];
-    if (value < 42933) return colors[5];
-    if (value < 78778) return colors[6];
-    if (value < 138675) return colors[7];
-    if (value < 242375) return colors[8];
-    if (value < 437625) return colors[9];
-    if (value < 766279) return colors[10];
+    if (value < 13) return colors[0];
+    if (value < 50) return colors[1];
+    if (value < 151) return colors[2];
+    if (value < 455) return colors[3];
+    if (value < 1308) return colors[4];
+    if (value < 3737) return colors[5];
+    if (value < 10656) return colors[6];
+    if (value < 30363) return colors[7];
+    if (value < 86489) return colors[8];
+    if (value < 246337) return colors[9];
+    if (value < 701590) return colors[10];
     if (value < 1998169) return colors[11];
 }
 /**
@@ -567,116 +648,117 @@ function getColorByGdp(value: number) {
  * @param value
  */
 function getColorByPop(value: number) {
-    if (value < 1030) return colors[0];
-    if (value < 5151) return colors[1];
-    if (value < 10302) return colors[2];
-    if (value < 17514) return colors[3];
-    if (value < 25757) return colors[4];
-    if (value < 35029) return colors[5];
-    if (value < 46362) return colors[6];
-    if (value < 59756) return colors[7];
-    if (value < 78301) return colors[8];
-    if (value < 101998) return colors[9];
-    if (value < 138058) return colors[10];
+    if (value < 962) return colors[0];
+    if (value < 1437) return colors[1];
+    if (value < 1673) return colors[2];
+    if (value < 2149) return colors[3];
+    if (value < 3112) return colors[4];
+    if (value < 5054) return colors[5];
+    if (value < 8979) return colors[6];
+    if (value < 16906) return colors[7];
+    if (value < 32924) return colors[8];
+    if (value < 65289) return colors[9];
+    if (value < 130656) return colors[10];
     if (value < 262723) return colors[11];
 }
 /**
  * 根据土地利用类型得到颜色
  * @param value
  */
+// 权:耕地（0.3399） 林地（0.0682） 草地（0.1252） 水域（0.0386） 城乡用地（0.4021）未利用（0.0260）
+
 function getColorByLucc(value: number) {
     switch (value) {
         case 11:
-            return 'rgb(240,72,184)';
+            return colors[0];
         case 12:
-            return 'rgb(242,214,53)';
+            return colors[0];
         case 21:
-            return 'rgb(29,186,207)';
+            return colors[1];
         case 22:
-            return 'rgb(16,9,227)';
+            return colors[1];
         case 23:
-            return 'rgb(40,232,30)';
+            return colors[1];
         case 24:
-            return 'rgb(247,27,38)';
+            return colors[1];
         case 31:
-            return 'rgb(6,41,112)';
+            return colors[2];
         case 32:
-            return 'rgb(36,79,5)';
+            return colors[2];
         case 33:
-            return 'rgb(245,183,179)';
+            return colors[2];
         case 41:
-            return 'rgb(107,43,11)';
+            return colors[3];
         case 42:
-            return 'rgb(163,235,145)';
+            return colors[3];
         case 43:
-            return 'rgb(151,154,230)';
+            return colors[3];
         case 44:
-            return 'rgb(198,37,247)';
+            return colors[3];
         case 45:
-            return 'rgb(87,7,71)';
+            return colors[3];
         case 46:
-            return 'rgb(37,250,133)';
+            return colors[3];
         case 51:
-            return 'rgb(22,148,93)';
+            return colors[4];
         case 52:
-            return 'rgb(250,102,110)';
+            return colors[4];
         case 53:
-            return 'rgb(230,133,64)';
+            return colors[4];
         case 61:
-            return 'rgb(66,47,189)';
+            return colors[5];
         case 62:
-            return 'rgb(153,138,52)';
+            return colors[5];
         case 63:
-            return 'rgb(126,171,31)';
+            return colors[5];
         case 64:
-            return 'rgb(213,247,221)';
+            return colors[5];
         case 65:
-            return 'rgb(156,98,130)';
+            return colors[5];
         case 66:
-            return 'rgb(190,111,242)';
+            return colors[5];
         case 67:
-            return 'rgb(138,14,43)';
+            return colors[5];
         case 99:
-            return 'rgb(0,0,0)';
+            return colors[5];
     }
 }
+
 /**
- * 根据交通类型得到颜色
+ * 根据土地利用的类别量化土地类型的值
  * @param value
  */
-function getColorByTrans(value: number) {
-    if (value < 10) return colors[0];
-    if (value < 30) return colors[1];
-    if (value < 60) return colors[2];
-    if (value < 100) return colors[3];
-    if (value < 200) return colors[4];
-    if (value < 320) return colors[5];
-    if (value < 560) return colors[6];
-    if (value < 900) return colors[7];
-    if (value < 1600) return colors[8];
-    if (value < 2400) return colors[9];
-    if (value < 3150) return colors[10];
-    return colors[11];
+
+function getLuccValueByWeight(value: number) {
+    if (!value) return 0;
+    if (value <= 12) return 0.3399;
+    if (value <= 24) return 0.0682;
+    if (value <= 33) return 0.1252;
+    if (value <= 46) return 0.0386;
+    if (value <= 53) return 0.4021;
+    return 0.026;
 }
+
 /**
  * 根据POI密度得到颜色
  * @param value
  */
+
+// 定权 文化服务(0.1209) 市政服务(0.0833) 商业服务(0.1004) 卫生服务(0.2447) 政府服务(0.2583) 教育服务(0.1924)
+
 function getColorByPoi(value: number) {
-    // 行政管理单位,警察局、政府、法院
-    if (value <= 2014) return 'rgb(240,72,184)';
-    // 教育 幼儿 学校
-    if (value <= 2084 && value >= 2082) return 'rgb(242,214,53)';
-    // 医疗卫生 医院诊所
-    if (value <= 2129 && value >= 2110) return 'rgb(240,72,184)';
-    // 文化体育 公园、剧院
-    if ((value >= 2201 && value <= 2258) || (value >= 2701 && value <= 2744))
-        return 'rgb(29,186,207)';
-    // 商业服务
-    if (value >= 2301 && value <= 2601) return 'rgb(245,183,179)';
-    // 市政公用
-    if (value >= 2901 || [2015, 2030, 2031].includes(value))
-        return 'rgb(230,133,64)';
+    if (value < 0.003) return colors[0];
+    if (value < 0.005) return colors[1];
+    if (value < 0.008) return colors[2];
+    if (value < 0.014) return colors[3];
+    if (value < 0.024) return colors[4];
+    if (value < 0.04) return colors[5];
+    if (value < 0.07) return colors[6];
+    if (value < 0.12) return colors[7];
+    if (value < 0.2) return colors[8];
+    if (value < 0.35) return colors[9];
+    if (value < 0.59) return colors[10];
+    return colors[11];
 }
 
 /**
@@ -716,7 +798,7 @@ function getColorByH(value: number) {
     return colors[11];
 }
 /**
- * 根据风趣指数获取颜色
+ * 根据风圈指数获取颜色
  * @param value
  */
 function getColorByWind(value: number) {
@@ -731,6 +813,40 @@ function getColorByWind(value: number) {
     if (value < 1600) return colors[8];
     if (value < 2400) return colors[9];
     if (value < 3150) return colors[10];
+    return colors[11];
+}
+
+/**
+ * 通过脆弱性获取颜色
+ * @param value
+ */
+function getColorByVulnerIndex(value: number) {
+    if (value < 0.002) return colors[0];
+    if (value < 0.01) return colors[1];
+    if (value < 0.02) return colors[2];
+    if (value < 0.04) return colors[3];
+    if (value < 0.08) return colors[4];
+    if (value < 0.1) return colors[5];
+    if (value < 0.15) return colors[6];
+    if (value < 0.2) return colors[7];
+    if (value < 0.25) return colors[8];
+    if (value < 0.3) return colors[9];
+    if (value < 0.35) return colors[10];
+    return colors[11]; // 0.5215
+}
+
+function getColorByRisk(value: number) {
+    if (value < 0.003) return colors[0];
+    if (value < 0.008) return colors[1];
+    if (value < 0.015) return colors[2];
+    if (value < 0.03) return colors[3];
+    if (value < 0.05) return colors[4];
+    if (value < 0.08) return colors[5];
+    if (value < 0.15) return colors[6];
+    if (value < 0.25) return colors[7];
+    if (value < 0.4) return colors[8];
+    if (value < 0.6) return colors[9];
+    if (value < 0.8) return colors[10];
     return colors[11];
 }
 
@@ -750,14 +866,14 @@ function getColorByIndex(index: string, value: number) {
         case 'V3':
             return getColorByLucc(value);
         case 'V4':
-            return getColorByTrans(value);
-        case 'V5':
-            return 'rgb(255,0,0)';
+            return getColorByVulnerIndex(value);
         case 'H0':
             return getColorByInfluenceTimes(value);
         case 'H1':
             return getColorByWind(value);
         case 'H2':
             return getColorByH(value);
+        case 'R':
+            return getColorByRisk(value)
     }
 }

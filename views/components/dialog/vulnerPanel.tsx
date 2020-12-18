@@ -26,13 +26,12 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            Indexes: ['GDP', '人口', 'POI', '土地类型', '交通', '综合'],
+            Indexes: ['GDP', '人口', 'POI', '土地类型', '综合'],
             urls: [
                 '/get/gdpIndex',
                 '/get/popIndex',
                 '/get/poiIndex',
                 '/get/landIndex',
-                '/get/transIndex',
             ],
         };
         this.canvasLayer = new CanvasLayrs();
@@ -54,6 +53,7 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
         }
         if (getLayer) {
             getLayer.setVisible(true);
+            this.preIndex = getIndex;
             return;
         }
         this.preIndex = getIndex;
@@ -64,10 +64,8 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
             const getData = result as VData;
             getGridData = getData['grids'];
         } else {
-            if (index > 4) {
-                console.time('1');
-                getVulnerGrids(boundNum, segment, trendIndex);
-                console.timeEnd('1');
+            if (index > 3) {
+                getGridData = await getVulnerGrids(boundNum, segment, trendIndex);
             } else {
                 getGridData = await getGrids(boundNum, urls[index]);
                 writeGridsDataToSore({ indexId: getIndex, grids: getGridData });
@@ -84,7 +82,7 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
         const { Indexes } = this.state;
         const { isShowV } = this.props;
         return (
-            <ul style={{ visibility: isShowV ? 'visible' : 'hidden' }}>
+            <ul style={{ visibility: isShowV ? 'visible' : 'hidden', top: '-142px' }}>
                 {Indexes.map((item, index) => {
                     return (
                         <li

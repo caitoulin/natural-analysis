@@ -50,6 +50,7 @@ export default class HazardPanel extends React.Component<IProps, IState> {
         }
         if (getLayer) {
             getLayer.setVisible(true);
+            this.preIndex = getIndex;
             return;
         }
         this.preIndex = getIndex;
@@ -92,7 +93,6 @@ export default class HazardPanel extends React.Component<IProps, IState> {
             <ul
                 style={{
                     visibility: isShowH ? 'visible' : 'hidden',
-                    top: '-88px',
                 }}>
                 {Indexes.map((item, index) => {
                     return (
