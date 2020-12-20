@@ -15,12 +15,14 @@ interface IProps {
 interface IState {
     isShowV: boolean;
     isShowH: boolean;
+    isShowL?: boolean;
+    cliclkIndex?: string
 }
 class RiskPanel extends React.Component<IProps, IState> {
     canvasLayer: any; preIndex: any;
     constructor(props: IProps) {
         super(props);
-        this.state = { isShowV: false, isShowH: false };
+        this.state = { isShowV: false, isShowH: false, isShowL: true };
         this.canvasLayer = new CanvasLayrs();
         this.preIndex = null;
     }
@@ -32,6 +34,7 @@ class RiskPanel extends React.Component<IProps, IState> {
     };
     showRisk = async () => {
         const { segment, trendIndex, trackInfo } = this.props;
+        this.changeLengendStatus('R');
         const getIndex = trendIndex
             ? segment.toString() + trendIndex.toString() + 'R'
             : segment.toString() + 'R';
@@ -57,11 +60,19 @@ class RiskPanel extends React.Component<IProps, IState> {
             boundaryLat,
         );
     };
-    changeLengendStatus = () => {
+    changeLengendStatus = (cliclkIndex: string) => {
+        this.setState({ cliclkIndex });
+    }
+    isShowLengend = (e: any) => {
+        if (!e.target.checked) {
+            this.setState({ isShowL: false })
+        } else {
+            this.setState({ isShowL: true })
+        }
 
     }
     render() {
-        const { isShowV, isShowH } = this.state;
+        const { isShowV, isShowH, isShowL, cliclkIndex } = this.state;
         const { segment, trendIndex, trackInfo } = this.props;
         const VProps = { segment, trendIndex, trackInfo, isShowV };
         const HProps = { segment, trendIndex, trackInfo, isShowH };
@@ -70,23 +81,23 @@ class RiskPanel extends React.Component<IProps, IState> {
                 className={classNames('risk-panel-show', {
                     'risk-panel-close': segment === null,
                 })}>
-                <LengendPanel />
+                {isShowL && <LengendPanel getIndex={cliclkIndex} />}
                 <span>
                     <input
                         type="checkbox"
                         defaultChecked={true}
-                        onChange={this.changeLengendStatus}
+                        onChange={this.isShowLengend}
                     />
                     {'图例'}
                 </span>
                 <ul>
                     <li onClick={this.showHazard}>
                         <span>{'危险性'}</span>
-                        <HazardPanel {...HProps} />
+                        <HazardPanel {...HProps} changeLengend={this.changeLengendStatus} />
                     </li>
                     <li onClick={this.showVlunter}>
                         <span>{'脆弱性'}</span>
-                        <VulnerPanel {...VProps} />
+                        <VulnerPanel {...VProps} changeLengend={this.changeLengendStatus} />
                     </li>
                     <li onClick={this.showRisk}>
                         <span>{'风险性'}</span>

@@ -20,6 +20,7 @@ interface IProps {
     segment: number | null;
     trendIndex: number | null;
     trackInfo: Array<EACHLINE>;
+    changeLengend: (cliclkIndex: string) => void;
 }
 export default class HazardPanel extends React.Component<IProps, IState> {
     canvasLayer: any;
@@ -34,7 +35,8 @@ export default class HazardPanel extends React.Component<IProps, IState> {
     }
     showGridResults = async (e: MouseEvent, index: number) => {
         e.stopPropagation();
-        const { segment, trendIndex, trackInfo } = this.props;
+        const { segment, trendIndex, trackInfo, changeLengend } = this.props;
+        changeLengend('H' + index);
         const getIndexLand = trendIndex
             ? segment.toString() + trendIndex.toString()
             : segment.toString()
