@@ -21,6 +21,7 @@ interface IProps {
     trendIndex: number | null;
     trackInfo: Array<EACHLINE>;
     changeLengend: (cliclkIndex: string) => void;
+    changeShowByIndex: (value: boolean) => void;
 }
 export default class HazardPanel extends React.Component<IProps, IState> {
     canvasLayer: any;
@@ -35,23 +36,34 @@ export default class HazardPanel extends React.Component<IProps, IState> {
     }
     showGridResults = async (e: MouseEvent, index: number) => {
         e.stopPropagation();
-        const { segment, trendIndex, trackInfo, changeLengend } = this.props;
+        const {
+            segment,
+            trendIndex,
+            trackInfo,
+            changeLengend,
+            changeShowByIndex,
+        } = this.props;
         changeLengend('H' + index);
         const getIndexLand = trendIndex
             ? segment.toString() + trendIndex.toString()
-            : segment.toString()
+            : segment.toString();
         const getIndex = trendIndex
             ? segment.toString() + trendIndex.toString() + index + 'H'
-            : segment.toString() + index + 'H'
+            : segment.toString() + index + 'H';
         const getLayer = this.canvasLayer.getLayerByIndex(getIndex);
         if (this.preIndex === getIndex) {
-            getLayer.getVisible()
-                ? getLayer.setVisible(false)
-                : getLayer.setVisible(true);
+            if (getLayer.getVisible()) {
+                getLayer.setVisible(false);
+                changeShowByIndex(false);
+            } else {
+                getLayer.setVisible(true);
+                changeShowByIndex(true);
+            }
             return;
         }
         if (getLayer) {
             getLayer.setVisible(true);
+            changeShowByIndex(true);
             this.preIndex = getIndex;
             return;
         }
@@ -65,7 +77,10 @@ export default class HazardPanel extends React.Component<IProps, IState> {
             getGridDataVL = getData['grids'];
         } else {
             getGridDataVL = await getGrids(boundNum, '/get/landIndex');
-            writeGridsDataToSore({ indexId: getIndexLand + '3' + 'V', grids: getGridDataVL });
+            writeGridsDataToSore({
+                indexId: getIndexLand + '3' + 'V',
+                grids: getGridDataVL,
+            });
         }
         let getGridData;
         if (!!resultH) {
@@ -73,7 +88,11 @@ export default class HazardPanel extends React.Component<IProps, IState> {
             getGridData = getData['grids'];
         } else {
             if (index > 1) {
-                getGridData = await getHazardIndex(trackInfo, segment, trendIndex);
+                getGridData = await getHazardIndex(
+                    trackInfo,
+                    segment,
+                    trendIndex
+                );
             } else {
                 index === 0
                     ? (getGridData = getEachHazardGrids(trackInfo, true))
@@ -85,8 +104,10 @@ export default class HazardPanel extends React.Component<IProps, IState> {
             getIndex,
             'H' + index,
             getGridData,
-            boundaryLat, getGridDataVL
+            boundaryLat,
+            getGridDataVL
         );
+        changeShowByIndex(true);
     };
     render() {
         const { Indexes } = this.state;

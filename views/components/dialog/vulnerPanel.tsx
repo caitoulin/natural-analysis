@@ -20,6 +20,7 @@ interface IProps {
     trendIndex: number | null;
     trackInfo: Array<EACHLINE>;
     changeLengend: (cliclkIndex: string) => void;
+    changeShowByIndex: (value: boolean) => void;
 }
 export default class VulnerPanel extends React.Component<IProps, IState> {
     canvasLayer: any;
@@ -40,7 +41,13 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
     }
     showGridResults = async (e: MouseEvent, index: number) => {
         e.stopPropagation();
-        const { segment, trendIndex, trackInfo, changeLengend } = this.props;
+        const {
+            segment,
+            trendIndex,
+            trackInfo,
+            changeLengend,
+            changeShowByIndex,
+        } = this.props;
         changeLengend('V' + index);
         const { urls } = this.state;
         const getIndex = trendIndex
@@ -48,13 +55,18 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
             : segment.toString() + index + 'V';
         const getLayer = this.canvasLayer.getLayerByIndex(getIndex);
         if (this.preIndex === getIndex) {
-            getLayer.getVisible()
-                ? getLayer.setVisible(false)
-                : getLayer.setVisible(true);
+            if (getLayer.getVisible()) {
+                getLayer.setVisible(false);
+                changeShowByIndex(false);
+            } else {
+                getLayer.setVisible(true);
+                changeShowByIndex(true);
+            }
             return;
         }
         if (getLayer) {
             getLayer.setVisible(true);
+            changeShowByIndex(true);
             this.preIndex = getIndex;
             return;
         }
@@ -67,12 +79,17 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
             getGridData = getData['grids'];
         } else {
             if (index > 3) {
-                getGridData = await getVulnerGrids(boundNum, segment, trendIndex);
+                getGridData = await getVulnerGrids(
+                    boundNum,
+                    segment,
+                    trendIndex
+                );
             } else {
                 getGridData = await getGrids(boundNum, urls[index]);
                 writeGridsDataToSore({ indexId: getIndex, grids: getGridData });
             }
         }
+        changeShowByIndex(true);
         this.canvasLayer.createCanvasLayer(
             getIndex,
             'V' + index,
@@ -84,7 +101,11 @@ export default class VulnerPanel extends React.Component<IProps, IState> {
         const { Indexes } = this.state;
         const { isShowV } = this.props;
         return (
-            <ul style={{ visibility: isShowV ? 'visible' : 'hidden', top: '-142px' }}>
+            <ul
+                style={{
+                    visibility: isShowV ? 'visible' : 'hidden',
+                    top: '-145px',
+                }}>
                 {Indexes.map((item, index) => {
                     return (
                         <li

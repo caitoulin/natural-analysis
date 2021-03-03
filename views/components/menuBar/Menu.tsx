@@ -11,7 +11,7 @@ export default class Menu extends Component<IProps, any> {
     state: any = {
         menu: {
             statisticalNalysis: [
-                { SpatialAnalysis: ['影响力指数', '统计图标'] },
+                { SpatialAnalysis: ['影响力指数'] },
                 { netAnalysis: ['登陆划分', '起源划分'] },
             ],
             miningRisk: [

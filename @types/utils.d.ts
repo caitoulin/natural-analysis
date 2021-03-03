@@ -33,3 +33,31 @@ interface PLOTGRIDS {
     renderExtent: number[][];
     getGridDataVL?: number[][];
 }
+interface EachPoint {
+    time: string;
+    positon: Coordinate;
+    pressure?: string;
+    currentSpeed: string;
+    windCircle: any;
+}
+interface EachTyphoon {
+    tfbh: string;
+    tfdl: number;
+    maxstrong: string;
+    maxp: number;
+    maxfspeed: number;
+    maxmovespeed: number;
+    isornotty: number;
+    listInfo: Array<EachPoint>;
+}
+interface Coordinate {
+    Lat: number;
+    Lng: number;
+}
+interface GridIndex {
+    total?: number;
+    [key: string]: number;
+}
+interface Grid {
+    [key: string]: GridIndex;
+}

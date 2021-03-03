@@ -11,7 +11,7 @@
     .risk-panel-show {
         position: absolute;
         z-index: 2;
-        right: 2%;
+        left: 10%;
         bottom: 8%;
         font-size: 18px;
         display: flex;
@@ -31,7 +31,7 @@
                 ul {
                     padding: 0px;
                     position: absolute;
-                    top: -84px;
+                    top: -88px;
                     left: -2px;
                     li {
                         cursor: pointer;
@@ -73,6 +73,13 @@
             justify-content: center;
             flex-direction: column;
             position: relative;
+            & > span {
+                display: inline-block;
+                text-align: center;
+                height: 30px;
+                font-size: 18px;
+                line-height: 30px;
+            }
         }
     }
     .risk-panel-close {

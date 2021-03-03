@@ -3,30 +3,20 @@ import ImageCanvasSource from 'ol/source/ImageCanvas';
 import React from 'react';
 import { getTracksGrid } from '../../src/util/netRequets';
 import { plotGrids } from '../../src/util/analysisProcess';
-interface IState {
-    grids: number[][];
-}
 let canvasLayer: any = null;
-export default class TrackDensity extends React.Component<any, IState> {
+export default class TrackDensity extends React.Component {
     constructor(props: any) {
         super(props);
     }
-    componentDidMount() {
-        this.getGridsData();
-    }
-    getGridsData = async () => {
+    showTrackDensity = async () => {
+        let grids: number[][];
         if (!localStorage.getItem('trackGrids')) {
             const getGrids = await getTracksGrid();
-            const grids = getGrids['data'];
+            grids = getGrids['data'];
             localStorage.setItem('influencedIndex', JSON.stringify(grids));
-            this.setState({ grids });
         } else {
-            const grids = JSON.parse(localStorage.getItem('trackGrids'));
-            this.setState({ grids });
+            grids = JSON.parse(localStorage.getItem('trackGrids'));
         }
-    };
-    showTrackDensity = () => {
-        const { grids } = this.state;
         const renderExtent = [
             [98, 3],
             [178, 83],

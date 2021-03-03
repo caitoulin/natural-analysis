@@ -12,8 +12,10 @@ import { connect } from 'react-redux';
 import { EachTyphoon } from '../../src/util/handleIndexDB';
 import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
 import { getAllTRacksLanded } from '../../src/util/analysisProcess';
+import ChartsPanel from './chartsPanel';
 interface Istate {
     isShow: boolean;
+    isShowChrats: boolean;
 }
 interface IProps {
     landedOrigin: Array<TyphoonLandedOrigin>;
@@ -69,6 +71,7 @@ class BasisBar extends React.Component<IProps, Istate> {
         super(props);
         this.state = {
             isShow: false,
+            isShowChrats: false,
         };
     }
     handleChangeStatus = (): void => {
@@ -201,8 +204,14 @@ class BasisBar extends React.Component<IProps, Istate> {
             window.LDmap.addLayer(vectorLayerLandedTrack);
         }
     };
+    handleShowChartsPanel = () => {
+        this.setState((preState) => ({
+            isShowChrats: !preState.isShowChrats,
+        }));
+    };
     render() {
-        const { isShow } = this.state;
+        const { isShow, isShowChrats } = this.state;
+        const { tyLists } = this.props;
         return (
             <div className="basis-bar">
                 <div className="control-bar">
@@ -217,7 +226,9 @@ class BasisBar extends React.Component<IProps, Istate> {
                     <span onClick={this.handleShowLanded}>登陆点</span>
                     <span onClick={this.handleShowAllTracks}>台风轨迹</span>
                     <span onClick={this.handleShowLandedTracks}>登陆轨迹</span>
+                    <span onClick={this.handleShowChartsPanel}>基本图表</span>
                 </div>
+                {isShowChrats && <ChartsPanel tyLists={tyLists} />}
             </div>
         );
     }

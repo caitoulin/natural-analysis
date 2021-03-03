@@ -27,7 +27,7 @@ declare global {
     interface Window {
         LDmap: any;
     }
-}
+} // 更改已存在的对象，Window对象以及存在
 interface IState {
     index: string;
 }

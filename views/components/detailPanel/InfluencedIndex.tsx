@@ -11,7 +11,7 @@ import {
     MultiPolygon,
     Properties,
 } from '@turf/turf';
-
+import IndexChart from '../dialog/indexChart';
 import { LANDTRACK } from '../../src/middleware/reducer/typhoonInfo';
 import {
     getInterplotTRacksLanded,
@@ -20,24 +20,30 @@ import {
 import { getInfluenceIndex } from '../../src/util/netRequets';
 import { connect } from 'react-redux';
 import { Fill, Style, Text } from 'ol/style';
-interface GridIndex {
-    total?: number;
-    [key: string]: number;
-}
-interface Grid {
-    [key: string]: GridIndex;
-}
+import { extend } from 'ol/extent';
 interface Option {
     units?: Units;
     properties?: Properties;
     mask?: turfFeature<Polygon | MultiPolygon> | Polygon | MultiPolygon;
 }
+interface IProps {
+    landedTracks: Array<LANDTRACK>;
+}
+interface IState {
+    index: string;
+    indexKey: Grid;
+}
 const localCompute = 1;
 const indexSource = new VectorSource();
 const indexLayer = new VectorLayer({ source: indexSource });
-let indexKey: Grid = {};
-function InfluencedIndex({ landedTracks }: { landedTracks: Array<LANDTRACK> }) {
-    const defaultGrids = async () => {
+class InfluencedIndex extends React.Component<IProps, IState> {
+    constructor(props: IProps) {
+        super(props);
+        this.state = { index: '', indexKey: {} };
+    }
+    defaultGrids = async () => {
+        let indexKey = {};
+        const { landedTracks } = this.props;
         if (indexSource.getFeatures().length !== 0) {
             if (indexLayer.getVisible()) {
                 indexLayer.setVisible(false);
@@ -121,23 +127,47 @@ function InfluencedIndex({ landedTracks }: { landedTracks: Array<LANDTRACK> }) {
                             })
                         );
                     }
-                    feature.setId(index);
+                    feature.setId('infIndex-' + index);
                     return feature;
                 });
             indexSource.addFeatures(allFeatures);
             window.LDmap.addLayer(indexLayer);
+            this.setState({ indexKey });
         }
     };
-    const getRaster = () => {
-        defaultGrids();
+    rigisterClick = (e: any) => {
+        this.setState({ index: '' });
+        window.LDmap.forEachFeatureAtPixel(
+            e.pixel,
+            (feature: any) => {
+                const id = feature.getId();
+                if (id.includes('infIndex')) {
+                    const index = id.split('-')[1];
+                    this.setState({ index });
+                }
+            },
+            {
+                layerFilter: (layer: any) => {
+                    return layer === indexLayer;
+                },
+            }
+        );
     };
-    const handlecomputeIndex = () => {};
-    return (
-        <div className="cluster-groups">
-            <button onClick={getRaster}>影响力栅格</button>
-            <button onClick={handlecomputeIndex}>指数年度变化</button>
-        </div>
-    );
+    componentDidMount() {
+        window.LDmap.on('singleclick', this.rigisterClick);
+    }
+    componentWillUnmount() {
+        window.LDmap.un('singleclick', this.rigisterClick);
+    }
+    render() {
+        const { index, indexKey } = this.state;
+        return (
+            <div className="cluster-groups">
+                <button onClick={this.defaultGrids}>影响力栅格</button>
+                <IndexChart index={index} indexKey={indexKey} />
+            </div>
+        );
+    }
 }
 
 function mapStateToProps(state: any) {
