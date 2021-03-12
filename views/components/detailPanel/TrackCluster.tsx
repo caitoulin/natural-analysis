@@ -119,9 +119,9 @@ class TrackCluster extends React.Component<IProps, IState> {
                 });
                 eachLineFeature.setStyle(
                     new Style({
-                        text: new Text({
+                      /*   text: new Text({
                             text: Object.keys(item)[0],
-                        }),
+                        }), */
                         stroke: new Stroke({
                             width: 1,
                             color: 'rgb(38,188,213)',
@@ -259,12 +259,14 @@ class TrackCluster extends React.Component<IProps, IState> {
                 });
                 eachFeature.setStyle(
                     new Style({
-                        text: new Text({
-                            font: '20px Calibri,sans-serif',
-                            text: index.toString(),
-                        }),
+                        // text: new Text({
+                        //     offsetX:-3,
+                        //     offsetY:-3,
+                        //     font: '22px Calibri,sans-serif',
+                        //     text: (index+1).toString(),
+                        // }),
                         stroke: new Stroke({
-                            width: 5,
+                            width: 4,
                             color: colors[index],
                         }),
                     })

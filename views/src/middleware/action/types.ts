@@ -9,3 +9,5 @@ export const ORIGINCLUSTER = 'ORIGINCLUSTER';
 export const LANDEDTRACK = 'LANDEDTRACK';
 
 export const TRENDINFO = 'TRENDINFO';
+
+export const  CLUSTERTREND = 'CLUSTERTREND';

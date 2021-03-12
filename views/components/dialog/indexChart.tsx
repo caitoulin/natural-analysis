@@ -31,11 +31,11 @@ export default class IndexChart extends React.Component<IProps> {
             return [item, yValues[index]];
         });
         const linerRegression = ecStat.regression('linear', linerData, 1);
-        linerRegression.points.sort(function (a, b) {
+        linerRegression.points.sort(function (a:any, b:any) {
             return a[0] - b[0];
         });
         const polyRegression = ecStat.regression('polynomial', linerData, 3);
-        polyRegression.points.sort(function (a, b) {
+        polyRegression.points.sort(function (a: any, b: any) {
             return a[0] - b[0];
         });
         const options = {
@@ -120,7 +120,7 @@ export default class IndexChart extends React.Component<IProps> {
                         //  type: 'dashed',
                         width: 1,
                     },
-                    data: polyRegression.points.map((item) =>
+                    data: polyRegression.points.map((item: any) =>
                         item[1] > 0 ? item[1] : 0
                     ),
                 },
@@ -132,7 +132,7 @@ export default class IndexChart extends React.Component<IProps> {
                         //  type: 'dashed',
                         width: 1,
                     },
-                    data: linerRegression.points.map((item) =>
+                    data: linerRegression.points.map((item: any) =>
                         item[1] > 0 ? item[1] : 0
                     ),
                 },

@@ -4,6 +4,7 @@ import {
     LANDEDCLUSTER,
     ORIGINCLUSTER,
     LANDEDTRACK,
+    CLUSTERTREND,
 } from '../action/types';
 import { EachTyphoon } from '../../util/handleIndexDB';
 import { TyphoonOrigin } from '../../util/clusterOrigin';
@@ -32,6 +33,7 @@ export interface INISTIAL {
     landedTracks: Array<LANDTRACK>;
     landedCluster: Array<CLUSTERSEG>;
     originCluster: Array<Array<TyphoonOrigin>>;
+    getDividedAreaLand: any;
 }
 
 const initialState: INISTIAL = {
@@ -40,6 +42,7 @@ const initialState: INISTIAL = {
     typhoonLists: [],
     landedCluster: [],
     originCluster: [],
+    getDividedAreaLand: {},
 };
 interface Action {
     type: string;
@@ -60,6 +63,8 @@ export default function typhoonInfo(
             return { ...state, originCluster: data };
         case LANDEDTRACK:
             return { ...state, landedTracks: data };
+        case CLUSTERTREND:
+            return { ...state, getDividedAreaLand: data };
         default:
             return state;
     }

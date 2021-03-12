@@ -182,13 +182,13 @@ class BasisBar extends React.Component<IProps, Istate> {
                     const getStartPointFeature = new Feature({
                         geometry: new Point(eachTrack[0]['coordinate']),
                     });
-                    getStartPointFeature.setStyle(
-                        new Style({
-                            text: new Text({
-                                text: item['tfbh'].toString(),
-                            }),
-                        })
-                    );
+                    // getStartPointFeature.setStyle(
+                    //     new Style({
+                    //         text: new Text({
+                    //             text: item['tfbh'].toString(),
+                    //         }),
+                    //     })
+                    // );
                     const getLinePoint = eachTrack.map((each) => {
                         return each['coordinate'];
                     });

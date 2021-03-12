@@ -223,7 +223,7 @@ function ClusterPanel({
                     data: item,
                 };
             });
-            dispatch(combineLandedCluster(getClusterSegment));
+           dispatch(combineLandedCluster(getClusterSegment));
             vectorCombiSource.addFeatures(getAllFeatures);
             window.LDmap.addLayer(vectorCombinLayer);
         }
@@ -240,6 +240,7 @@ function ClusterPanel({
                 .map((item, index) => {
                     const { segment, data } = item;
                     const getRadius = getCircleRadius(data.length);
+                    // 登陆数量
                     const countFeature = new Feature({
                         geometry: new Point(landedCenterPosition[index]),
                     });
@@ -250,6 +251,13 @@ function ClusterPanel({
                                 fill: new Fill({
                                     color: 'rgb(255,193,37)',
                                 }),
+                            }),
+                            text: new Text({
+                                offsetX: 0,
+                                offsetY: 0,
+                                font: '12px Microsoft YaHei',
+                                text: (data.length).toString(),
+                                fill: new Fill({ color: '#000000' }),
                             }),
                         })
                     );
@@ -269,11 +277,11 @@ function ClusterPanel({
                                 color: colors[index],
                             }),
                             text: new Text({
-                                offsetX: -3,
-                                offsetY: -3,
-                                font: '15px Microsoft YaHei',
+                                offsetX: -15,
+                                offsetY: -4,
+                                font: '16px Microsoft YaHei',
                                 text: (index + 1).toString(),
-                                fill: new Fill({ color: '#000000' }),
+                                fill: new Fill({ color: '#FF0000' }),
                             }),
                         })
                     );
@@ -281,7 +289,7 @@ function ClusterPanel({
                         pointStartFeature,
                         linefeature,
                         pointEndFeature,
-                        countFeature,
+                       // countFeature,
                     ];
                 })
                 .reduce((a, b) => {

@@ -270,7 +270,7 @@ export function chooseClusterIndex(flattenLandCluster: any, tfbh: string) {
     for (let i = 0; i < flattenLandCluster.length; i++) {
         const getKeys = Object.keys(flattenLandCluster[i]);
         if (getKeys.includes(tfbh)) {
-            return i.toString();
+            return [i.toString(), tfbh];
         }
     }
 }

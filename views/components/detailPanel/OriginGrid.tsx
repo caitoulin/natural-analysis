@@ -15,6 +15,8 @@ import {
     getLineWidth,
     caclcuCenter,
 } from '../../src/util/analysisProcess';
+import { Dispatch } from 'redux';
+import { getDividedAreaTY } from '../../src/middleware/action/actions';
 import { CLUSTERSEG } from '../../src/middleware/reducer/typhoonInfo';
 import GeoJSON from 'ol/format/GeoJSON';
 const colors = [
@@ -40,13 +42,12 @@ const originCenterPosition = [
 ];
 const landedCenterPosition = [
     [120.85, 26.04],
-    [116.57, 22.74],
-    [112.46, 21.27],
-    [110.7, 18.63],
-    [123.32, 37.39],
-    [122.44, 32.08],
+    [114.7309, 22.059],
+    [111.1182, 19.9807],
+    [122.87, 37.39],
+    [109.1423, 21.288],
+    [121.82, 33.51],
     [121.79, 23.45],
-    [109.1, 21.2],
 ];
 const vectorGridSource = new VectorSource();
 const vectorGridLayer = new VectorLayer({
@@ -85,6 +86,7 @@ const vectorAnalysisiLayer = new VectorLayer({
 interface IProps {
     tyLists: Array<EachTyphoon>;
     landedCluster: Array<CLUSTERSEG>;
+    dispatch?: Dispatch;
 }
 interface IState {
     getClusterResult: number[][];
@@ -209,34 +211,44 @@ class OriginGrid extends React.Component<IProps, IState> {
         });
         const getArrowDirection = getClusterResult.map((item) => {
             const getCluterCount: any = {
-                '0': 0,
-                '1': 0,
-                '2': 0,
-                '3': 0,
-                '4': 0,
-                '5': 0,
-                '6': 0,
-                '7': 0,
+                '0': { 'value': 0, 'form': [] },
+                '1': { 'value': 0, 'form': [] },
+                '2': { 'value': 0, 'form': [] },
+                '3': { 'value': 0, 'form': [] },
+                '4': { 'value': 0, 'form': [] },
+                '5': { 'value': 0, 'form': [] },
+                '6': { 'value': 0, 'form': [] }
             };
             item.forEach((each) => {
                 const { tfbh, tfdl } = getOriginInfo[each];
                 if (tfdl === 0) return;
-                const getIndex = chooseClusterIndex(
+                const [getIndex, landtfbh] = chooseClusterIndex(
                     flattenLandCluster,
                     tfbh.toString()
                 );
                 if (getIndex) {
-                    getCluterCount[getIndex] = getCluterCount[getIndex] + 1;
+                    getCluterCount[getIndex]['value'] = getCluterCount[getIndex]['value'] + 1;
+                    getCluterCount[getIndex]['form'].push(landtfbh);
                 }
             });
             return getCluterCount;
         });
+        const { dispatch } = this.props;
+        const getDividedAreaLand = getArrowDirection.map(item => {
+            return { '0': item['0']['form'], '1': item['1']['form'], '2': item['2']['form'], '3': item['3']['form'], '4': item['4']['form'], '5': item['5']['form'], '6': item['6']['form'], }
+        })
+        const getDividedArea = {
+            '0': { 'C': getDividedAreaLand[0]['0'] },
+            '1': { 'C': getDividedAreaLand[0]['1'], 'A': getDividedAreaLand[1]['1'] },
+            '2': { 'C': getDividedAreaLand[0]['2'], 'A': getDividedAreaLand[1]['2'] }
+        }
+        dispatch(getDividedAreaTY(getDividedArea));
         const getArrowFeatures = getArrowDirection
             .map((item, index) => {
                 const getIndexCoor = originCenterPosition[index];
                 const allKeyFeatures: any = [];
                 for (const [key, value] of Object.entries(item)) {
-                    if (value === 0) continue;
+                    if (value['value'] === 0) continue;
                     const transKey = parseInt(key);
                     const rotation = getRotation(
                         getIndexCoor,
@@ -255,7 +267,7 @@ class OriginGrid extends React.Component<IProps, IState> {
                     feature.setStyle([
                         new Style({
                             stroke: new Stroke({
-                                width: getLineWidth(value),
+                                width: getLineWidth(value['value']),
                                 color: 'rgb(38,188,213)',
                             }),
                         }),
@@ -268,6 +280,13 @@ class OriginGrid extends React.Component<IProps, IState> {
                                 rotateWithView: true,
                                 rotation: -rotation,
                             }),
+                            text: new Text({
+                                offsetX: -2,
+                                offsetY: -2,
+                                font: '12px Microsoft YaHei',
+                                text: value['value'].toString(),
+                                fill: new Fill({ color: '#000000' }),
+                            })
                         }),
                     ]);
                     allKeyFeatures.push(feature);

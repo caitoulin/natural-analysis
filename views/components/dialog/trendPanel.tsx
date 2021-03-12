@@ -19,6 +19,7 @@ interface IProps {
     landedCluster: Array<any>;
     landedTracks: Array<LANDTRACK>;
     index: number;
+    getDividedAreaLand: any;
     dispatch?: Dispatch;
 }
 interface IState {
@@ -163,12 +164,14 @@ class TrendPanel extends React.Component<IProps, IState> {
                 });
                 eachFeature.setStyle(
                     new Style({
-                        text: new Text({
-                            font: '20px Calibri,sans-serif',
-                            text: index.toString(),
-                        }),
+                        // text: new Text({
+                        //     offsetY:-3,
+                        //     offsetX:-6,
+                        //     font: '22px Calibri,sans-serif',
+                        //     text: (index+1).toString(),
+                        // }),
                         stroke: new Stroke({
-                            width: 5,
+                            width: 3,
                             color: colors[index],
                         }),
                     })
@@ -479,8 +482,12 @@ class TrendPanel extends React.Component<IProps, IState> {
         });
         noiseLayer.getSource().addFeatures(remainFeatures);
     };
+    showDividedAreaTracks = (indexArea: string) => {
+
+    }
     render() {
         const { getNewClusterResult } = this.state;
+        const { index, getDividedAreaLand } = this.props;
         return (
             <div className="dialog-trend-show">
                 <span>
@@ -495,6 +502,14 @@ class TrendPanel extends React.Component<IProps, IState> {
                 <button onClick={this.showRemainTracks}>剩余轨迹</button>
                 <button onClick={this.reclusterResult}>重新聚类</button>
                 <button onClick={this.showNoiseTracks}>噪声轨迹</button>
+                { !!getDividedAreaLand[index] && <div>
+                    {Object.keys(getDividedAreaLand[index]).map((item) => {
+                        return <button onClick={() => this.showDividedAreaTracks(item)} >
+                            {'起源' + item.toString()}
+                        </button>
+                    })}
+                </div>
+                }
                 <div>
                     {getNewClusterResult.map((item, index) => {
                         return (
@@ -506,8 +521,12 @@ class TrendPanel extends React.Component<IProps, IState> {
                         );
                     })}
                 </div>
-            </div>
+            </div >
         );
     }
 }
-export default connect()(TrendPanel);
+function mapStateToProps(state: any) {
+    const { getDividedAreaLand } = state.typhoonInfo;
+    return { getDividedAreaLand }
+}
+export default connect(mapStateToProps)(TrendPanel);

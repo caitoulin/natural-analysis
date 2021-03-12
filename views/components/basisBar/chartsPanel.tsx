@@ -154,8 +154,27 @@ export default class ChartsPanel extends React.Component<IProps, IState> {
         const getTyCount = Object.values(getData).map((item) => {
             return item['tycount'];
         });
+        const sum = getTyCount.reduce((a, b) => {
+            return a + b;
+        });
+        const max = getTyCount.reduce((a, b) => {
+            return Math.max(a, b)
+        });
+        const min = getTyCount.reduce((a, b) => {
+            return Math.min(a, b)
+        });
+        const getallLand = Object.values(getData).reduce((a,b)=>{
+            return a+b['land'];
+        },0)
+        console.log(getallLand);
         const getTyLandedCount = Object.values(getData).map((item) => {
             return item['land'];
+        });
+        const maxLand = getTyLandedCount.reduce((a, b) => {
+            return Math.max(a, b)
+        });
+        const minLand = getTyLandedCount.reduce((a, b) => {
+            return Math.min(a, b)
         });
         const options = {
             title: {
@@ -167,6 +186,7 @@ export default class ChartsPanel extends React.Component<IProps, IState> {
                     fontWeight: 'normal',
                     fontSize: 16,
                 },
+                show: false,
             },
             legend: {
                 textStyle: {
