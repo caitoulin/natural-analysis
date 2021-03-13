@@ -483,7 +483,58 @@ class TrendPanel extends React.Component<IProps, IState> {
         noiseLayer.getSource().addFeatures(remainFeatures);
     };
     showDividedAreaTracks = (indexArea: string) => {
-
+        const { index, getDividedAreaLand } = this.props;
+        const getArrayTybh = getDividedAreaLand[index][indexArea];
+        if (preTrendIndex !== indexArea) {
+            trendLayer.getSource().clear();
+            preTrendIndex = indexArea;
+            if (!trendLayer.getVisible()) {
+                trendLayer.setVisible(true);
+            }
+            const { index, landedCluster, landedTracks, dispatch } = this.props;
+            const landedTracksSegment = getLandedTrackSegment(
+                landedCluster,
+                landedTracks
+            );
+            const getIndexTracks = landedTracksSegment[index]['data'];
+            const formNewTracks = Object.assign({}, ...getIndexTracks);
+            const areaTracksFeatures = getArrayTybh.map((each: any) => {
+                const allCoors = formNewTracks[each].map((eachCoor: any) => {
+                    const { coordinate } = eachCoor;
+                    return coordinate;
+                });
+                const eachLineFeature = new Feature({
+                    geometry: new LineString(allCoors)
+                });
+                eachLineFeature.setStyle(
+                    new Style({
+                        stroke: new Stroke({
+                            width: 1,
+                            color: 'rgb(0,139,69)',
+                        }),
+                    })
+                );
+                return eachLineFeature;
+            });
+            trendLayer.getSource().addFeatures(areaTracksFeatures);
+            const trackInfo = getArrayTybh.map((each: any) => {
+                return { [each]: formNewTracks[each] };
+            });
+            const getTrendData = {
+                segment: index,
+                trendIndex: (index + 1).toString() + indexArea,
+                trackInfo,
+            };
+            dispatch(getTrenInfo(getTrendData));
+        } else {
+            if (trendLayer.getSource().getFeatures().length !== 0) {
+                if (trendLayer.getVisible()) {
+                    trendLayer.setVisible(false);
+                } else {
+                    trendLayer.setVisible(true);
+                }
+            }
+        }
     }
     render() {
         const { getNewClusterResult } = this.state;
