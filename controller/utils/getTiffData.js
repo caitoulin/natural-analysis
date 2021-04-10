@@ -22,7 +22,7 @@ function getBoundaryValue(getQuery, data, noData) {
     for (let i = 0; i < n; i++) {
         grids[i] = new Array(m);
         for (let j = 0; j < m; j++) {
-            const index = i + gapX + (j + gapY) * 7346;
+            const index = i + gapX + (j + gapY) * 735;
             if (data[index] !== noData) {
                 grids[i][j] = data[index];
             }
@@ -41,7 +41,7 @@ function splitCompute(bound) {
         const letfY = +leftTopY + index * xHeigth;
         const rightX = +rightDownX;
         const tem = +leftTopY + (index + 1) * xHeigth;
-        const rightY = tem > 4504 ? 4504 : tem;
+        const rightY = tem > 450 ? 450 : tem;
         const getBound = {
             leftTopX: letfX,
             leftTopY: letfY,
@@ -61,7 +61,6 @@ function getGridValue(url, bound) {
             worker.send(count[i]);
             worker.on('message', (msg) => {
                 results.push(msg.data);
-                console.log(msg.data);
                 worker.kill();
             });
         }

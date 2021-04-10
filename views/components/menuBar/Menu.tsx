@@ -10,13 +10,14 @@ interface IProps {
 export default class Menu extends Component<IProps, any> {
     state: any = {
         menu: {
-            statisticalNalysis: [
-                { SpatialAnalysis: ['影响力指数'] },
-                { netAnalysis: ['登陆划分', '起源划分'] },
+            基础特征: [1, 2],
+            统计分析: [
+                { 空间分析: ['影响力指数'] },
+                { 网络分析: ['登陆划分', '起源划分'] },
             ],
-            miningRisk: [
-                { trackDensity: ['轨迹可视化'] },
-                { trackDevelopment: ['轨迹聚类'] },
+            风险挖掘: [
+                { 轨迹密度: ['轨迹可视化'] },
+                { 轨迹风险: ['轨迹聚类'] },
             ],
         },
         isSelectedFirst: [],
@@ -35,6 +36,7 @@ export default class Menu extends Component<IProps, any> {
                         ([keys, values]: [string, string[]], index) => {
                             return (
                                 <li key={index}>
+                                    <i className="iconfont icon-kongjian"></i>
                                     <span
                                         onClick={(e) =>
                                             this.selectedSecond(
@@ -91,9 +93,15 @@ export default class Menu extends Component<IProps, any> {
         });
     };
     handleAnalysis = (index: string): void => {
+        console.log(index);
         this.props.handleControlPanel(index);
     };
     selectedFirst = (index: string): void => {
+        console.log(index);
+        if (index === '01') {
+            this.props.handleControlPanel(index);
+            return;
+        }
         const { isSelectedFirst } = this.state;
         if (!isSelectedFirst.includes(index)) {
             this.setState({ isSelectedFirst: [...isSelectedFirst, index] });
@@ -138,6 +146,12 @@ export default class Menu extends Component<IProps, any> {
         const { menu } = this.state;
         return (
             <div className="menu-list">
+                <div className="logo-img">
+                    <i className="iconfont icon-sty"></i>
+                    <span title={'台风轨迹挖掘及风险分析'}>
+                        台风轨迹挖掘及风险分析
+                    </span>
+                </div>
                 <ul className="first-ul">
                     {Object.entries(menu).map(([keys, lists], index) => {
                         return (

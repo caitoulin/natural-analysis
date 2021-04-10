@@ -31,6 +31,9 @@ module.exports = {
                 test: /\.(jsx|js)$/,
                 exclude: /node-modules/,
                 loader: 'babel-loader',
+                options: {
+                    compact: true,
+                  }
             },
             {
                 test: /\.(tsx|ts)$/,
@@ -48,6 +51,9 @@ module.exports = {
                 use: 'file-loader',
             },
         ],
+    },
+    performance: {
+        hints: false,
     },
     plugins: [
         htmlWebpackPlugin,

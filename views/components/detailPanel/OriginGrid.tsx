@@ -16,6 +16,7 @@ import {
     caclcuCenter,
 } from '../../src/util/analysisProcess';
 import { Dispatch } from 'redux';
+import { locationIp } from '../../src/util/netRequets';
 import { getDividedAreaTY } from '../../src/middleware/action/actions';
 import { CLUSTERSEG } from '../../src/middleware/reducer/typhoonInfo';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -211,13 +212,13 @@ class OriginGrid extends React.Component<IProps, IState> {
         });
         const getArrowDirection = getClusterResult.map((item) => {
             const getCluterCount: any = {
-                '0': { 'value': 0, 'form': [] },
-                '1': { 'value': 0, 'form': [] },
-                '2': { 'value': 0, 'form': [] },
-                '3': { 'value': 0, 'form': [] },
-                '4': { 'value': 0, 'form': [] },
-                '5': { 'value': 0, 'form': [] },
-                '6': { 'value': 0, 'form': [] }
+                '0': { value: 0, form: [] },
+                '1': { value: 0, form: [] },
+                '2': { value: 0, form: [] },
+                '3': { value: 0, form: [] },
+                '4': { value: 0, form: [] },
+                '5': { value: 0, form: [] },
+                '6': { value: 0, form: [] },
             };
             item.forEach((each) => {
                 const { tfbh, tfdl } = getOriginInfo[each];
@@ -227,21 +228,36 @@ class OriginGrid extends React.Component<IProps, IState> {
                     tfbh.toString()
                 );
                 if (getIndex) {
-                    getCluterCount[getIndex]['value'] = getCluterCount[getIndex]['value'] + 1;
+                    getCluterCount[getIndex]['value'] =
+                        getCluterCount[getIndex]['value'] + 1;
                     getCluterCount[getIndex]['form'].push(landtfbh);
                 }
             });
             return getCluterCount;
         });
         const { dispatch } = this.props;
-        const getDividedAreaLand = getArrowDirection.map(item => {
-            return { '0': item['0']['form'], '1': item['1']['form'], '2': item['2']['form'], '3': item['3']['form'], '4': item['4']['form'], '5': item['5']['form'], '6': item['6']['form'], }
-        })
+        const getDividedAreaLand = getArrowDirection.map((item) => {
+            return {
+                '0': item['0']['form'],
+                '1': item['1']['form'],
+                '2': item['2']['form'],
+                '3': item['3']['form'],
+                '4': item['4']['form'],
+                '5': item['5']['form'],
+                '6': item['6']['form'],
+            };
+        });
         const getDividedArea = {
-            '0': { 'C': getDividedAreaLand[0]['0'] },
-            '1': { 'C': getDividedAreaLand[0]['1'], 'A': getDividedAreaLand[1]['1'] },
-            '2': { 'C': getDividedAreaLand[0]['2'], 'A': getDividedAreaLand[1]['2'] }
-        }
+            '0': { C: getDividedAreaLand[0]['0'] },
+            '1': {
+                C: getDividedAreaLand[0]['1'],
+                A: getDividedAreaLand[1]['1'],
+            },
+            '2': {
+                C: getDividedAreaLand[0]['2'],
+                A: getDividedAreaLand[1]['2'],
+            },
+        };
         dispatch(getDividedAreaTY(getDividedArea));
         const getArrowFeatures = getArrowDirection
             .map((item, index) => {
@@ -274,8 +290,7 @@ class OriginGrid extends React.Component<IProps, IState> {
                         new Style({
                             geometry: new Point(getCenter),
                             image: new Icon({
-                                src:
-                                    'http://localhost:2379/public/images/arrow.png',
+                                src: locationIp + '/public/images/arrow.png',
                                 anchor: [0.75, 0.5],
                                 rotateWithView: true,
                                 rotation: -rotation,
@@ -286,7 +301,7 @@ class OriginGrid extends React.Component<IProps, IState> {
                                 font: '12px Microsoft YaHei',
                                 text: value['value'].toString(),
                                 fill: new Fill({ color: '#000000' }),
-                            })
+                            }),
                         }),
                     ]);
                     allKeyFeatures.push(feature);

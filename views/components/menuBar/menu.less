@@ -1,17 +1,41 @@
 ul {
     list-style: none;
     margin: 0px;
-    color: rgba(37, 77, 223, 0.7);
+    color: #fffaf0;
     font-size: 20px;
     cursor: pointer;
     user-select: none;
 }
 .menu-list {
     position: absolute;
-    left: 2px;
+    left: 0px;
+    top: 0px;
     z-index: 2;
+    display: flex;
+    align-items: center;
+    background-color: rgb(47, 154, 222, 0.95);
+    height: 50px;
+    width: 100%;
+    .logo-img {
+        float: left;
+        width: 25%;
+        overflow: hidden; //触发块级BFC
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgb(255, 255, 255);
+        span {
+            line-height: 50px;
+            margin-left: 3px;
+            font-size: 23px;
+            font-weight: 600;
+        }
+        span:hover{
+            color: rgb(255, 255, 255);
+        }
+    }
     .first-ul {
-        padding: 5px;
+        height: 100%;
+        float: left;
         &::after {
             display: block;
             content: '';
@@ -22,19 +46,30 @@ ul {
         }
         .second-child-ok {
             display: block;
+            margin: 0px;
+            padding-left: 9px;
         }
         .third-child-no {
             display: none;
         }
         .third-child-ok {
             display: block;
+            margin: 0px;
+            padding-left: 23px;
+            li {
+                height: 35px;
+                line-height: 35px;
+            }
         }
     }
     .first-ul > li {
         display: block;
         float: left;
-        padding-left: 10px;
-        min-width: 182px;
+        padding: 0px 10px;
+        min-width: 150px;
+        line-height: 48px;
+        margin: 0px;
+        background-color: #2f9ade;
     }
 
     span:hover {

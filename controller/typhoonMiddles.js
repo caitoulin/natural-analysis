@@ -8,10 +8,10 @@ const influencedIndex = require('../model/mock/influencedIndex');
 
 const fork = require('child_process').fork;
 const transUrl = './model/tiffImages/transport.tif';
-const gdpUrl = './model/tiffImages/gdp1km.tif';
-const landUrl = './model/tiffImages/land1km.tif';
-const popUrl = './model/tiffImages/pop1km.tif';
-const poiUrl = './model/tiffImages/poi1km.tif';
+const gdpUrl = './model/tiffImages/gdp1km101.tif';
+const landUrl = './model/tiffImages/land1km101.tif';
+const popUrl = './model/tiffImages/pop1km101.tif';
+const poiUrl = './model/tiffImages/poi1km101.tif';
 const getTyListData = (req, res) => {
     const { typhoonPartOne } = partOne;
     const { typhoonPartTwo } = partTwo;

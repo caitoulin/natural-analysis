@@ -1,6 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
-import './basis.less';
 import '../../src/assets/fonts/iconfont.css';
 import { TyphoonLandedOrigin } from '../../src/util/clusterLanded';
 import VectorLayer from 'ol/layer/Vector';
@@ -74,14 +72,6 @@ class BasisBar extends React.Component<IProps, Istate> {
             isShowChrats: false,
         };
     }
-    handleChangeStatus = (): void => {
-        const { isShow } = this.state;
-        if (isShow) {
-            this.setState({ isShow: false });
-        } else {
-            this.setState({ isShow: true });
-        }
-    };
     handleShowLanded = (): void => {
         const { landedOrigin } = this.props;
         if (vectorSourceLanded.getFeatures().length !== 0) {
@@ -213,23 +203,15 @@ class BasisBar extends React.Component<IProps, Istate> {
         const { isShow, isShowChrats } = this.state;
         const { tyLists } = this.props;
         return (
-            <div className="basis-bar">
-                <div className="control-bar">
-                    <i
-                        className="iconfont icon-caidan"
-                        onClick={this.handleChangeStatus}></i>
-                </div>
-                <div
-                    className={classNames('show-bar', {
-                        'no-show-bar': !isShow,
-                    })}>
-                    <span onClick={this.handleShowLanded}>登陆点</span>
-                    <span onClick={this.handleShowAllTracks}>台风轨迹</span>
-                    <span onClick={this.handleShowLandedTracks}>登陆轨迹</span>
-                    <span onClick={this.handleShowChartsPanel}>基本图表</span>
+            <>
+                <div className="cluster-groups">
+                    <button onClick={this.handleShowLanded}>登陆点</button>
+                    <button onClick={this.handleShowAllTracks}>台风轨迹</button>
+                    <button onClick={this.handleShowLandedTracks}>登陆轨迹</button>
+                    <button onClick={this.handleShowChartsPanel}>基本图表</button>
                 </div>
                 {isShowChrats && <ChartsPanel tyLists={tyLists} />}
-            </div>
+            </>
         );
     }
 }

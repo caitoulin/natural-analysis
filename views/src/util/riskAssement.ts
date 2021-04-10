@@ -1,6 +1,6 @@
 import { getIndexGridsData, writeGridsDataToSore } from './handleIndexDB';
 const eachRadius = 105;
-const gridWidth = 0.0083333333;
+const gridWidth = 0.083333333;  // 请求尺度
 const topLeftCoor = [73.5570830473, 53.5662499699];
 const downRightCoor = [134.773749469, 16.0329167867];
 import { Extent } from 'ol/extent';
@@ -574,7 +574,7 @@ export function plotRiskAssessmentGrids(plotData: PLOTGRIDS, index: string) {
         projection: Projection
     ) => {
         const { grids, renderExtent, getGridDataVL } = plotData;
-        const gridWidth = 0.0083333333;
+        const gridWidth = 0.083333333; // 更改尺度
         const canvas = document.createElement('canvas');
         canvas.width = size[0];
         canvas.height = size[1];

@@ -6,21 +6,22 @@ import TrackDensity from './TrackDensity';
 import TrackCluster from './TrackCluster';
 import classNames from 'classnames';
 import './detail.less';
+import BasisBar from '../basisBar/basisBar';
 export default function DetailPanel({ index }: { index: string }) {
     const getPanel = (index: string) => {
         console.log(index);
         switch (index) {
-            case '01000':
-                return <InfluencedIndex />;
-            case '01001':
-                return <div></div>;
-            case '01100':
-                return <ClusterPanel />;
-            case '01101':
-                return <OriginGrid />;
             case '11000':
-                return <TrackDensity />;
+                return <InfluencedIndex />;
+            case '01':
+                return <BasisBar />;
             case '11100':
+                return <ClusterPanel />;
+            case '11101':
+                return <OriginGrid />;
+            case '21000':
+                return <TrackDensity />;
+            case '21100':
                 return <TrackCluster />;
         }
     };

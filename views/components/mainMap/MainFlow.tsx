@@ -97,7 +97,6 @@ class MainFlow extends React.Component<any, IState> {
         return (
             <div className="container">
                 <Menu handleControlPanel={this.handleConrolPanel} />
-                <BasisBar />
                 <DetailPanel index={index} />
                 <RiskPanel />
                 <div id="map"></div>

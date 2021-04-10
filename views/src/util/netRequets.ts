@@ -1,5 +1,5 @@
 import axios from 'axios';
-const locationIp = 'http://localhost:2379';
+export const locationIp = 'http://localhost:2379';
 
 const axiosRequest = axios.create({
     baseURL: locationIp,
